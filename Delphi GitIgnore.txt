@@ -103,9 +103,6 @@ modules/
 # Custom build directories
 _Release-Binaries
 
-# VS Code user files
-.vscode/
-
 # Gnu Global / VSCode Pascal editing
 GPATH
 GRTAGS
