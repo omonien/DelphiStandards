@@ -110,3 +110,10 @@ _Release-Binaries
 GPATH
 GRTAGS
 GTAGS
+
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
