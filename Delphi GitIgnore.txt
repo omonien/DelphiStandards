@@ -1,17 +1,25 @@
 ###############################################################################
 # Delphi .gitignore (Curated)
 # ---------------------------------------------------------------------------
-# This is a carefully curated .gitignore file tailored for Embarcadero Delphi
-# development environments, including support for legacy and modern versions.
+# IMPORTANT: This file must be renamed to ".gitignore" (without .txt extension)!
 #
-# It ignores:
+# This carefully curated .gitignore file is specifically optimized for
+# Embarcadero Delphi development environments, supporting both legacy and
+# modern versions.
+#
+# USAGE:
+# 1. Copy this file to the root directory of your Git repository
+# 2. Rename from "Delphi GitIgnore.txt" to ".gitignore"
+# 3. Make project-specific adjustments if needed
+#
+# This file ignores:
 # - Compiler and build output (e.g., .dcu, .exe, .dll)
-# - IDE-generated metadata and user-specific files (e.g., .dsk, .local)
+# - IDE-generated metadata and user-specific files (.dsk, .local)
 # - Backup and recovery files
 # - Platform-specific output directories
 # - Known version control systems and Delphi-specific tools
 #
-# License: MIT License https://opensource.org/license/mit  
+# License: MIT License https://opensource.org/license/mit
 #
 # Copyright (c) 2025 Olaf Monien
 # Permission is hereby granted, free of charge, to any person obtaining a copy
