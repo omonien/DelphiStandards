@@ -54,6 +54,12 @@ Note: The style guide is maintained in German and English. Please keep both docu
 - Issues and PRs are welcome
 - Single-language PRs (DE or EN) are fine; maintainer will sync the other language after merge
 
+## Ideas
+
+- Provide configuration templates for code formatters to implement this style guide (e.g., 2-space indentation, 120-char line length, synchronized vertical guideline)...
+- Shared project presets (.dproj) or IDE settings for teams
+
+
 ## License
 
 MIT License – see notices in the files

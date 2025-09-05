@@ -54,6 +54,11 @@ Hinweis: Der Style Guide wird synchron in Deutsch und Englisch gepflegt. Änderu
 - Issues und Pull Requests sind willkommen
 - Bitte Änderungen im Style Guide stets in DE und EN spiegeln (die Synchronisierung erfolgt spätestens nach dem Merge durch den Maintainer)
 
+## Ideen
+
+- Konfigurations-Templates für Code-Formatter und Editor-Guidelines, um den Style Guide technisch umzusetzen (z. B. 2 Leerzeichen, 120 Zeichen, synchronisierte vertikale Guideline) ...
+- Gemeinsame Projekt-Presets (.dproj) oder IDE-Einstellungen fürs Team
+
 ## Lizenz
 
 MIT License – siehe Hinweise in den Dateien
