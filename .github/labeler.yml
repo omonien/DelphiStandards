@@ -1,0 +1,20 @@
+needs-sync:
+  - changed-files:
+      - any-glob-to-any-file: "Delphi Style Guide.md"
+      - all-globs-to-all-files: "!Delphi Style Guide EN.md"
+
+needs-sync-style-guide-en:
+  - changed-files:
+      - any-glob-to-any-file: "Delphi Style Guide EN.md"
+      - all-globs-to-all-files: "!Delphi Style Guide.md"
+
+needs-sync-readme:
+  - changed-files:
+      - any-glob-to-any-file: "README.md"
+      - all-globs-to-all-files: "!README.de.md"
+
+needs-sync-readme-de:
+  - changed-files:
+      - any-glob-to-any-file: "README.de.md"
+      - all-globs-to-all-files: "!README.md"
+

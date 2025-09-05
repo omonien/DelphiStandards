@@ -1,0 +1,62 @@
+name: Docs Sync Reminder
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  create-sync-issue:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Create sync reminder issue if only one language changed
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+
+            const { data: files } = await github.pulls.listFiles({
+              owner, repo, pull_number: prNumber, per_page: 100
+            });
+            const names = files.map(f => f.filename);
+
+            const pairs = [
+              { de: "Delphi Style Guide.md", en: "Delphi Style Guide EN.md" },
+              // README: only if you introduce a README.de.md later
+              // { de: "README.de.md", en: "README.md" },
+            ];
+
+            const outOfSync = pairs.filter(p =>
+              (names.includes(p.de) && !names.includes(p.en)) ||
+              (names.includes(p.en) && !names.includes(p.de))
+            );
+
+            if (outOfSync.length === 0) {
+              core.info("No sync needed.");
+              return;
+            }
+
+            const title = `Sync DE/EN docs after merge (PR #${prNumber})`;
+            const body = [
+              "Post-merge task: synchronize DE/EN documents.",
+              "",
+              "Affected pairs:",
+              ...outOfSync.map(p => `- ${p.de} ⇄ ${p.en}`),
+              "",
+              `PR: #${prNumber}`
+            ].join("\n");
+
+            await github.issues.create({
+              owner,
+              repo,
+              title,
+              labels: ["needs-sync"],
+              assignees: [context.payload.pull_request.merged_by?.login || context.actor],
+              body,
+            });
+
