@@ -56,7 +56,7 @@ Hinweis: Der Style Guide wird synchron in Deutsch und Englisch gepflegt. Änderu
 
 ## Ideen
 
-- Konfigurations-Templates für Code-Formatter und Editor-Guidelines, um den Style Guide technisch umzusetzen (z. B. 2 Leerzeichen, 120 Zeichen, synchronisierte vertikale Guideline) ...
+- Konfigurations-Templates für Code-Formatter, um den Style Guide technisch umzusetzen (z. B. 2 Leerzeichen, 120 Zeichen, synchronisierte vertikale Guideline) ...
 - Gemeinsame Projekt-Presets (.dproj) oder IDE-Einstellungen fürs Team
 
 ## Lizenz
