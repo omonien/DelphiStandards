@@ -1,3 +1,10 @@
+<div align="center">
+  <a href="https://www.embarcadero.com/products/delphi">
+    <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Delphi_Logo_12.svg" alt="Delphi Logo" width="120" />
+  </a>
+</div>
+
+
 # Delphi Standards
 
 [![Lang-EN](https://img.shields.io/badge/lang-EN-blue.svg)](README.md) [![Lang-DE](https://img.shields.io/badge/lang-DE-lightgrey.svg)](README.de.md)
