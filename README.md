@@ -1,4 +1,4 @@
-<div align="center">
+<div align="left">
   <a href="https://www.embarcadero.com/products/delphi">
     <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Delphi_Logo_12.svg" alt="Delphi Logo" width="120" />
   </a>
