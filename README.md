@@ -30,6 +30,9 @@ Teams frequently commit files that should not be versioned (IDE artifacts, build
 
 The curated, Delphi-specific .gitignore prevents exactly that. The Style Guide, in parallel, provides a shared understanding of structure, naming, and modern language features.
 
+Beyond team settings, a consistent Style Guide also benefits solo developers over the long run. This guide follows proven, classic patterns seen in Delphi's RTL/VCL/FMX code, yet it is certainly opinionated. The most important thing is to agree on a style and apply it consistently across the codebase—consistency beats “perfect.”
+
+
 ## Contents
 
 - Delphi Style Guide (DE): [Delphi Style Guide.md](Delphi%20Style%20Guide.md)

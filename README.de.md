@@ -30,6 +30,9 @@ Gerade in Team‑Repos werden in der Eile häufig Dateien eingecheckt, die nicht
 
 Die enthaltene, auf Delphi zugeschnittene .gitignore‑Datei verhindert genau das. Der Style Guide sorgt parallel für ein gemeinsames Verständnis von Struktur, Benennung und modernen Sprachfeatures.
 
+Auch außerhalb von Teams profitieren Einzelentwickler langfristig von einem konsistenten Style Guide. Dieser Leitfaden orientiert sich an bewährten, klassischen Strukturen, wie man sie auch im RTL/VCL/FMX‑Code von Delphi findet – ist aber sicherlich meinungsstark formuliert. Entscheidend ist nicht der „perfekte“ Stil, sondern dass man sich auf einen Stil einigt und ihn konsequent im gesamten Codebestand anwendet.
+
+
 ## Inhalte
 
 - Delphi Style Guide (DE): [Delphi Style Guide.md](Delphi%20Style%20Guide.md)
