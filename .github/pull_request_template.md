@@ -12,7 +12,7 @@ Describe your change briefly. / Bitte kurz die Änderung beschreiben.
 ---
 
 ## Maintainer post-merge checklist (do not remove)
-- [ ] Sync DE/EN documents for updated pairs (e.g., "Delphi Style Guide.md" ⇄ "Delphi Style Guide EN.md")
+- [ ] Sync DE/EN documents for updated pairs (e.g., "Delphi Style Guide DE.md" ⇄ "Delphi Style Guide EN.md")
 - [ ] Update language badges/links if needed
 - [ ] Run a quick spellcheck/format pass (optional)
 

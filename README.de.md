@@ -38,7 +38,7 @@ Auch außerhalb von Teams profitieren Einzelentwickler langfristig von einem kon
 
 - Kuratierte GitIgnore‑Vorlage: [Delphi GitIgnore.txt](Delphi%20GitIgnore.txt)
 - Git Attributes‑Vorlage: [Delphi GitAttributes.txt](Delphi%20GitAttributes.txt)
-- Delphi Style Guide (DE): [Delphi Style Guide.md](Delphi%20Style%20Guide.md)
+- Delphi Style Guide (DE): [Delphi Style Guide DE.md](Delphi%20Style%20Guide%20DE.md)
 - Delphi Style Guide (EN): [Delphi Style Guide EN.md](Delphi%20Style%20Guide%20EN.md)
 
 Hinweis: Der Style Guide wird synchron in Deutsch und Englisch gepflegt. Änderungen sollten immer in beiden Dokumenten erfolgen.

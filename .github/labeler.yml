@@ -1,12 +1,12 @@
 needs-sync:
   - changed-files:
-      - any-glob-to-any-file: "Delphi Style Guide.md"
+      - any-glob-to-any-file: "Delphi Style Guide DE.md"
       - all-globs-to-all-files: "!Delphi Style Guide EN.md"
 
 needs-sync-style-guide-en:
   - changed-files:
       - any-glob-to-any-file: "Delphi Style Guide EN.md"
-      - all-globs-to-all-files: "!Delphi Style Guide.md"
+      - all-globs-to-all-files: "!Delphi Style Guide DE.md"
 
 needs-sync-readme:
   - changed-files:

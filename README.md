@@ -38,7 +38,7 @@ Beyond team settings, a consistent Style Guide also benefits solo developers ove
 
 - Curated GitIgnore template: [Delphi GitIgnore.txt](Delphi%20GitIgnore.txt)
 - Git Attributes template: [Delphi GitAttributes.txt](Delphi%20GitAttributes.txt)
-- Delphi Style Guide (DE): [Delphi Style Guide.md](Delphi%20Style%20Guide.md)
+- Delphi Style Guide (DE): [Delphi Style Guide DE.md](Delphi%20Style%20Guide%20DE.md)
 - Delphi Style Guide (EN): [Delphi Style Guide EN.md](Delphi%20Style%20Guide%20EN.md)
 
 Note: The style guide is maintained in German and English. Please keep both documents in sync (maintainer will handle synchronization post-merge if needed).

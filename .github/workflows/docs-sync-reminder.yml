@@ -26,7 +26,7 @@ jobs:
             const names = files.map(f => f.filename);
 
             const pairs = [
-              { de: "Delphi Style Guide.md", en: "Delphi Style Guide EN.md" },
+              { de: "Delphi Style Guide DE.md", en: "Delphi Style Guide EN.md" },
               // README: only if you introduce a README.de.md later
               // { de: "README.de.md", en: "README.md" },
             ];
