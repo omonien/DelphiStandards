@@ -2,7 +2,7 @@
 
 > **Version:** 2.0
 > **Autor:** Olaf Monien
-> **Stand:** 2025-01-03
+> **Stand:** 2025-09-07
 
 > Hinweis: Dieser Style Guide liegt in deutscher und englischer Fassung vor und wird synchron gepflegt. Änderungen sollten stets in beiden Dokumenten vorgenommen werden.
 

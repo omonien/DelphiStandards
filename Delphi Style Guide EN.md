@@ -2,7 +2,7 @@
 
 > Version: 2.0
 > Author: Olaf Monien
-> Updated: 2025-01-03
+> Updated: 2025-09-07
 
 > Note: This style guide is maintained in both German and English. Keep both documents in sync when making changes.
 
