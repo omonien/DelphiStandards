@@ -1,0 +1,13 @@
+# Ignore release artifacts and local build outputs
+release-assets/
+
+# macOS
+.DS_Store
+
+# VSCode workspace cache (keep recommended config files under version control)
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
