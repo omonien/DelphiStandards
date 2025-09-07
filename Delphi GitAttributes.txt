@@ -1,0 +1,42 @@
+# Delphi .gitattributes template
+#
+# Purpose:
+# - Normalize line endings for Delphi source files to CRLF to avoid false diffs across OSes
+# - Protect binary artifacts from Git filters/diff/merge drivers
+# - Provide clear guidance for .dfm/.fmx which can be stored as text (default) or binary
+#
+# Notes:
+# - After adding/updating this file in an existing repository, run:
+#     git add --renormalize .
+#   and commit the changes to apply EOL normalization.
+# - Choose ONE mode for .dfm/.fmx (TEXT vs BINARY). Do not enable both.
+
+############################################################
+# 1) Line endings (text files): enforce CRLF
+############################################################
+*.pas   text eol=crlf
+*.dpr   text eol=crlf
+*.dpk   text eol=crlf
+*.inc   text eol=crlf
+*.rc    text eol=crlf
+*.dproj text eol=crlf
+
+# Forms/Frames: pick exactly one mode for each, see section 2)
+# Default Delphi setting is TEXT for .dfm/.fmx; if your project uses BINARY, switch below.
+*.dfm   text eol=crlf
+*.fmx   text eol=crlf
+
+############################################################
+# 2) Binary files (Git must not attempt text filters/diff)
+############################################################
+# If your project stores .dfm/.fmx as BINARY, uncomment these and comment out the TEXT lines above.
+# *.dfm  binary
+# *.fmx  binary
+
+*.res   binary
+*.ico   binary
+*.dcu   binary
+*.bpl   binary
+*.dll   binary
+*.exe   binary
+
