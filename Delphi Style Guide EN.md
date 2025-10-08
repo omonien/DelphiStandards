@@ -1,8 +1,8 @@
 # Delphi Style Guide (EN)
 
-> Version: 2.0
+> Version: 2.1
 > Author: Olaf Monien
-> Updated: 2025-09-07
+> Updated: 2025-10-08
 
 > Note: This style guide is maintained in both German and English. Keep both documents in sync when making changes.
 

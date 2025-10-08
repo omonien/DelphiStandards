@@ -1,8 +1,8 @@
 # **Delphi Style Guide**
 
-> **Version:** 2.0
+> **Version:** 2.1
 > **Autor:** Olaf Monien
-> **Stand:** 2025-09-07
+> **Stand:** 2025-10-08
 
 > Hinweis: Dieser Style Guide liegt in deutscher und englischer Fassung vor und wird synchron gepflegt. Änderungen sollten stets in beiden Dokumenten vorgenommen werden.
 
