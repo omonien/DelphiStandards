@@ -9,6 +9,98 @@
 
 Ein einheitlicher Coding Style ist essenziell für die Lesbarkeit, Wartbarkeit und Teamarbeit in Softwareprojekten. Er hilft dabei, Missverständnisse zu vermeiden, Fehler schneller zu finden und die Einarbeitung neuer Teammitglieder zu erleichtern. Der hier dokumentierte Style Guide basiert auf bewährten Konventionen und soll als allgemeingültiger Vorschlag für moderne Delphi-Projekte dienen.
 
+---
+
+## **Quick Start - Die wichtigsten Regeln auf einen Blick**
+
+Neu im Projekt? Hier sind die essentiellen Regeln:
+
+### **Benennung**
+```pascal
+// Variablen
+var
+  LCustomer: TCustomer;        // Lokal: L-Präfix
+
+type
+  TMyClass = class
+  private
+    FName: string;             // Feld: F-Präfix
+  end;
+
+// Parameter
+procedure DoSomething(const AValue: string);  // Parameter: A-Präfix
+
+// Schleifenzähler - Ausnahme!
+for var i := 0 to 10 do       // Kleinbuchstabe, kein Präfix
+
+// Konstanten
+const
+  cMaxRetries = 3;             // Technisch: c-Präfix
+  scErrorMessage = 'Error';    // String: sc-Präfix
+```
+
+### **Typen**
+```pascal
+type
+  TCustomer = class end;           // Klasse: T-Präfix
+  ILogger = interface end;         // Interface: I-Präfix
+  TPoint = record end;             // Record: T-Präfix, KEINE F-Präfixe bei Feldern!
+  TFileUtils = class sealed end;   // Utility-Klasse: sealed
+  TStringHelper = record helper for string end;  // Helper: nur für echte Helper!
+```
+
+### **Fehlerbehandlung**
+```pascal
+// Ressourcen freigeben
+LObject := TObject.Create;
+try
+  // Verwendung
+finally
+  FreeAndNil(LObject);  // Immer FreeAndNil statt .Free
+end;
+
+// Mehrere Objekte
+LQuery := nil;
+LList := nil;
+try
+  LQuery := TFDQuery.Create(nil);
+  LList := TList<string>.Create;
+finally
+  FreeAndNil(LQuery);
+  FreeAndNil(LList);
+end;
+```
+
+### **Formatierung**
+- **2 Leerzeichen** Einrückung
+- **120 Zeichen** max. Zeilenlänge
+- `begin..end` immer auf eigener Zeile
+- Inline-Variablen bevorzugen (ab Delphi 10.3+)
+
+### **Collections**
+```pascal
+// Feste Größe → TArray<T>
+function GetNames: TArray<string>;
+
+// Dynamische Liste → TList<T>
+var LNumbers: TList<Integer>;
+
+// Objekte mit Ownership → TObjectList<T>
+var LCustomers: TObjectList<TCustomer>;
+```
+
+### **Dokumentation**
+```pascal
+/// <summary>
+/// Berechnet die Summe zweier Zahlen
+/// </summary>
+function Add(const AValue1, AValue2: Integer): Integer;
+```
+
+**→ Für Details siehe die vollständige Dokumentation unten.**
+
+---
+
 ## **Inhaltsverzeichnis**
 
 - [1. Formatierung](#1-formatierung)
