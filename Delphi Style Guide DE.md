@@ -179,6 +179,7 @@ procedure TryParseInteger(const AValue: string; out AResult: Integer; out ASucce
 - Globale Variablen mit `G`-Präfix (sollten vermieden werden)
 - PascalCase, keine Typ-Präfixe außer bei Komponenten
 - Aussagekräftige Namen verwenden
+- **Ausnahme**: Einfache Schleifenzähler dürfen kleingeschriebene Einzelbuchstaben (`i`, `j`, `k`) ohne Präfix verwenden
 
 ```pascal
 var
@@ -186,6 +187,21 @@ var
   LCustomerList: TObjectList<TCustomer>;
   LIndex: Integer;
   LFound: Boolean;
+
+// Schleifenzähler - Ausnahme von der Regel
+for var i := 0 to 10 do
+begin
+  // Einfacher Schleifenzähler ohne L-Präfix
+end;
+
+// Verschachtelte Schleifen
+for var i := 0 to Rows - 1 do
+begin
+  for var j := 0 to Cols - 1 do
+  begin
+    Matrix[i, j] := 0;
+  end;
+end;
 ```
 
 ```pascal
@@ -204,6 +220,50 @@ var
   GAppTitle: string;
   GLogLevel: Integer;
 ```
+
+**Ausnahme: Unit-interne globale Variablen im Implementation-Abschnitt**
+
+Globale Variablen im `implementation`-Abschnitt sind akzeptabel für Unit-interne Singletons oder Zustandsverwaltung:
+
+```pascal
+unit MyService;
+
+interface
+
+type
+  TMyService = class
+    class procedure Initialize;
+    class procedure Finalize;
+  end;
+
+implementation
+
+var
+  GServiceInstance: TMyService;  // Unit-intern, nicht von außen sichtbar
+  GInitialized: Boolean = False;
+
+class procedure TMyService.Initialize;
+begin
+  if not GInitialized then
+  begin
+    GServiceInstance := TMyService.Create;
+    GInitialized := True;
+  end;
+end;
+
+class procedure TMyService.Finalize;
+begin
+  FreeAndNil(GServiceInstance);
+  GInitialized := False;
+end;
+
+end.
+```
+
+**Vorteile:**
+- Nicht von außen sichtbar (Kapselung)
+- Ideal für Unit-Singletons
+- Vermeidet globale Verschmutzung des Namespaces
 
 #### **2.3.1 Komponentennamen**
 
@@ -279,6 +339,10 @@ type
   TCustomer = class end;
   TOrderManager = class end;
   TDatabaseConnection = class end;
+
+  // Sealed Classes (Utility-Klassen ohne Instanzen)
+  TPathUtils = class sealed end;
+  TStringUtils = class sealed end;
 
   // Interfaces (Platzhalter)
   ILogger = interface end;
@@ -429,9 +493,43 @@ except
 end;
 ```
 
+**Ausnahme: Defensive Programmierung in kritischen Systemen**
+
+In kritischen Systemen (z.B. Exception-Handler, Logging, Cleanup-Code) kann es notwendig sein, Fehler zu unterdrücken, um Rekursion oder Systemabstürze zu vermeiden:
+
+```pascal
+// Exception-Handler darf selbst keine Exceptions werfen
+procedure LogException(const E: Exception);
+begin
+  try
+    WriteToLogFile(E.Message);
+  except
+    // Silently ignore - logging must not fail
+    // Alternative: Fallback zu OutputDebugString
+  end;
+end;
+
+// Cleanup-Code in Finalization
+finalization
+  try
+    if Assigned(GResolver) then
+      FreeAndNil(GResolver);
+  except
+    // Silently ignore - finalization must complete
+  end;
+end.
+```
+
+**Wichtig:** Solche `except`-Blöcke sollten:
+- Einen Kommentar haben, der erklärt, warum Fehler unterdrückt werden
+- Nur in absolut notwendigen Fällen verwendet werden
+- Möglichst einen Fallback-Mechanismus haben
+
 ### **4.2 Verzweigungen und Schleifen**
 
 Auch Einzeiler in Bedingungen oder Schleifen sollten grundsätzlich mit `begin..end` gekapselt werden. Dies erhöht die Lesbarkeit und verhindert Fehler beim späteren Hinzufügen weiterer Anweisungen.
+
+- Schleifenzähler dürfen kleingeschriebene Einzelbuchstaben (`i`, `j`, `k`) ohne `L`-Präfix verwenden
 
 ```pascal
 if UserLoggedIn then
@@ -449,10 +547,21 @@ case DayOfTheWeek(Date) of // 1=Montag .. 7=Sonntag
   // ...
 end;
 
-for I := 1 to 10 do
+// Einfacher Schleifenzähler
+for var i := 1 to 10 do
 begin
   if SomeCondition then
     Break; // Hier kein begin..end notwendig
+end;
+
+// Traditionelle Deklaration
+var
+  i: Integer;
+begin
+  for i := 0 to List.Count - 1 do
+  begin
+    ProcessItem(List[i]);
+  end;
 end;
 ```
 
@@ -593,18 +702,135 @@ Customer.Address := 'Beispielstraße';
 
 - Verwende Records für einfache, in sich geschlossene Datenstrukturen ohne komplexes Verhalten.
 - Verwende `T` als Präfix für Record-Namen, analog zu Klassen.
-- Records sollten möglichst unveränderlich sein oder klar dokumentieren, wie sie verändert werden.
+- **Record-Felder haben KEINE Präfixe** (kein `F`, `L`, `G`) – sie sind immer öffentlich
 - Vermeide Methoden oder komplexe Logik innerhalb eines Records, außer du verwendest gezielt `record helpers` oder `record with methods`.
 - Records sind ideal für DTOs, Geometrie-Typen oder einfache Wertobjekte.
 
-```
+```pascal
 type
   TPoint = record
-    X, Y: Integer;
+    X, Y: Integer;  // Keine F-Präfixe bei Records!
+  end;
+
+  TStackFrameInfo = record
+    ModuleName: string;
+    ProcName: string;
+    FileName: string;
+    Line: Integer;
+    Address: Pointer;
   end;
 ```
 
-### **7.3 Enumerationen**
+**Vergleich Klasse vs. Record:**
+
+```pascal
+// Klasse - private Felder mit F-Präfix
+type
+  TCustomer = class
+  private
+    FName: string;      // F-Präfix für private Felder
+    FAge: Integer;
+  public
+    property Name: string read FName write FName;
+    property Age: Integer read FAge write FAge;
+  end;
+
+// Record - öffentliche Felder ohne Präfix
+type
+  TCustomerData = record
+    Name: string;       // Kein Präfix - immer öffentlich
+    Age: Integer;
+  end;
+```
+
+### **7.2a Sealed Classes für Utility-Funktionen**
+
+Für reine Utility-Klassen ohne Instanzen und Zustand verwende `class sealed` mit ausschließlich `class`-Methoden.
+
+**Wann `sealed class` statt `record` verwenden:**
+
+- **Record**: Für Datenstrukturen (DTOs, Wertobjekte)
+  ```pascal
+  type
+    TPoint = record
+      X, Y: Integer;
+    end;
+  ```
+
+- **Sealed Class**: Für Utility-Funktionen ohne Daten
+  ```pascal
+  type
+    TPathUtils = class sealed
+      class function FileExists(const APath: string): Boolean;
+      class procedure DeleteFile(const APath: string);
+    end;
+  ```
+
+**Vorteile von `sealed` bei Utility-Klassen:**
+
+- Verhindert sinnlose Vererbung
+- Kommuniziert Design-Intent: "Keine Instanzen, nur Funktionen"
+- Ermöglicht Compiler-Optimierungen
+- Entspricht Best Practices aus anderen Sprachen (C# `static class`, Java `final class`)
+
+**Vergleich:**
+
+| Aspekt | Record | Sealed Class | Normale Klasse |
+|--------|--------|--------------|----------------|
+| Zweck | Datenstruktur | Utility-Funktionen | Objekte mit Zustand |
+| Instanzen | Wertsemantik | Keine (nur class methods) | Referenzsemantik |
+| Vererbung | Nein | Nein (sealed) | Ja (möglich) |
+| Beispiel | `TPoint`, `TRect` | `TPathUtils`, `TDXStacktrace` | `TCustomer`, `TOrder` |
+
+### **7.3 Class und Record Helper**
+
+Class und Record Helper erweitern bestehende Typen um zusätzliche Methoden, ohne den ursprünglichen Typ zu verändern. Verwende das Suffix `Helper` **ausschließlich** für echte Class und Record Helper.
+
+**Namenskonvention:**
+- Format: `T<Typname>Helper`
+- Das Wort "Helper" ist **reserviert** für Class und Record Helper
+- Verwende "Helper" NICHT für Sealed Utility-Klassen
+
+```pascal
+// Korrekt - Record Helper
+type
+  TPointHelper = record helper for TPoint
+    function Distance(const AOther: TPoint): Double;
+    function ToString: string;
+  end;
+
+// Korrekt - Class Helper
+type
+  TStringListHelper = class helper for TStringList
+    procedure SaveToFileUTF8(const AFileName: string);
+    function ContainsText(const AText: string): Boolean;
+  end;
+
+// FALSCH - Kein Helper, nur eine Utility-Klasse
+type
+  TFileHelper = class sealed  // Sollte TFileUtils o.ä. heißen
+    class function FileExists(const APath: string): Boolean;
+  end;
+
+// Korrekt - Sealed Utility-Klasse
+type
+  TFileUtils = class sealed
+    class function FileExists(const APath: string): Boolean;
+    class procedure DeleteFile(const APath: string);
+  end;
+```
+
+**Wann Helper verwenden:**
+- Erweiterung von RTL/VCL/FMX-Typen ohne Vererbung
+- Hinzufügen von Convenience-Methoden zu Records
+- Rückwärtskompatibilität, wenn der ursprüngliche Typ nicht geändert werden kann
+
+**Wichtige Hinweise:**
+- Nur ein Helper kann für einen Typ in einem gegebenen Scope aktiv sein
+- Helper können keine Felder hinzufügen, nur Methoden
+- Helper-Methoden haben Zugriff auf private Member des erweiterten Typs
+
+### **7.4 Enumerationen**
 
 - Verwende für Enumerationstypen `T` als Präfix
 - Bevorzuge die Punktnotation bei Zugriffen auf Enum-Werte (z. B. `TOrderStatus.New`) – dies ist lesbarer und vermeidet Namenskonflikte, insbesondere bei gleichnamigen Konstanten.
@@ -623,9 +849,9 @@ end;
 
 ```
 
-### **7.4 Thread-Sicherheit**
+### **7.5 Thread-Sicherheit**
 
-Für Thread-Synchronisation und den sicheren Zugriff auf gemeinsam genutzte Ressourcen sollte bevorzugt `TMonitor`verwendet werden. Im Gegensatz zu `TCriticalSection` ist `TMonitor` performanter, da es oft ohne separate Synchronisationsobjekte auskommt – jede beliebige Objektinstanz kann direkt als Lock verwendet werden.
+Für Thread-Synchronisation und den sicheren Zugriff auf gemeinsam genutzte Ressourcen sollte bevorzugt `TMonitor` verwendet werden. Im Gegensatz zu `TCriticalSection` ist `TMonitor` performanter, da es oft ohne separate Synchronisationsobjekte auskommt – jede beliebige Objektinstanz kann direkt als Lock verwendet werden.
 
 Ein typisches Muster sieht folgendermaßen aus:
 
@@ -684,6 +910,87 @@ begin
 end;
 ```
 
+#### **8.1.1 TArray<T> vs. TList<T> vs. TObjectList<T>**
+
+Wähle den richtigen Collection-Typ basierend auf dem Anwendungsfall:
+
+**TArray<T>** - Für Collections mit fester oder selten wechselnder Größe:
+```pascal
+type
+  TStacktrace = TArray<TStackFrameInfo>;  // Feste Größe nach Erfassung
+
+function GetTopCustomers: TArray<TCustomer>;  // Rückgabewert
+
+var
+  LNames: TArray<string>;
+begin
+  SetLength(LNames, 3);
+  LNames[0] := 'Alice';   // O(1) - sehr schnell, keine Reallokation
+  LNames[1] := 'Bob';
+  LNames[2] := 'Charlie';
+  LNames[0] := 'John';    // Ändern von Elementen ist O(1)
+end;
+```
+
+**Vorteile:**
+- Geringer Memory-Overhead
+- Sehr schneller Zugriff und Änderung von Elementen (O(1))
+- Ideal für Rückgabewerte und Collections mit fester Größe
+- Keine Speicherverwaltung nötig (automatisch freigegeben)
+- Elemente können effizient in-place geändert werden
+
+**TList<T>** - Für dynamische Listen von Werttypen:
+```pascal
+var
+  LNumbers: TList<Integer>;
+  LNames: TList<string>;
+begin
+  LNumbers := TList<Integer>.Create;
+  try
+    LNumbers.Add(42);
+    LNumbers.Add(100);
+  finally
+    FreeAndNil(LNumbers);
+  end;
+end;
+```
+
+**Vorteile:**
+- Dynamisches Hinzufügen/Entfernen
+- Sortierung und Suche eingebaut
+- Ideal für Werttypen (Integer, String, Records)
+
+**TObjectList<T>** - Für Listen von Objekten mit Ownership:
+```pascal
+var
+  LCustomers: TObjectList<TCustomer>;
+begin
+  LCustomers := TObjectList<TCustomer>.Create(True);  // True = OwnsObjects
+  try
+    LCustomers.Add(TCustomer.Create('Max'));
+    // Objekte werden automatisch freigegeben
+  finally
+    FreeAndNil(LCustomers);
+  end;
+end;
+```
+
+**Vorteile:**
+- Automatische Speicherverwaltung für Objekte (wenn OwnsObjects = True)
+- Verhindert Memory Leaks
+- Ideal für Objektsammlungen
+
+**Entscheidungshilfe:**
+
+| Kriterium | TArray<T> | TList<T> | TObjectList<T> |
+|-----------|-----------|----------|----------------|
+| Größe ändern | Selten (SetLength) | Häufig (Add/Delete) | Häufig (Add/Delete) |
+| Element-Änderung | Sehr schnell (O(1)) | Schnell (O(1)) | Schnell (O(1)) |
+| Inhalt | Beliebige Typen | Werttypen | Objekte |
+| Ownership | N/A | N/A | Ja (OwnsObjects) |
+| Memory-Overhead | Minimal | Mittel | Mittel |
+| Anwendungsfall | Collections mit fester Größe, Rückgabewerte | Dynamische Listen | Objektsammlungen |
+
 ### **8.2 Anonyme Methoden**
 
 Verwende anonyme Methoden für kurze, lokale Funktionalität.
@@ -703,30 +1010,35 @@ end;
 
 ### **8.3 Inline Variables (Delphi 10.3+)**
 
-Deklariere Variablen direkt am Verwendungsort für bessere Lesbarkeit.
+Deklariere Variablen direkt am Verwendungsort für bessere Lesbarkeit. Bei Schleifen sollte die Inline-Deklaration bevorzugt werden.
 
 ```pascal
 // Traditionell
 procedure ProcessData;
 var
-  LIndex: Integer;
+  i: Integer;
   LCustomer: TCustomer;
 begin
-  for LIndex := 0 to CustomerList.Count - 1 do
+  for i := 0 to CustomerList.Count - 1 do
   begin
-    LCustomer := CustomerList[LIndex];
+    LCustomer := CustomerList[i];
     // Verarbeitung...
   end;
 end;
 
-// Mit Inline Variablen
+// Mit Inline Variablen (bevorzugt ab Delphi 10.3+)
 procedure ProcessData;
 begin
-  for var LIndex := 0 to CustomerList.Count - 1 do
+  for var i := 0 to CustomerList.Count - 1 do
   begin
-    var LCustomer := CustomerList[LIndex];
+    var LCustomer := CustomerList[i];
     // Verarbeitung...
   end;
+
+  // Auch bei anderen Variablen sinnvoll
+  var LResult := CalculateSomething;
+  if LResult > 0 then
+    ProcessResult(LResult);
 end;
 ```
 
@@ -827,14 +1139,22 @@ type
 
 ## **9. Dokumentation**
 
-Verwende XML-Dokumentationskommentare für öffentliche APIs.
+Verwende XML-Dokumentationskommentare (`///`) konsequent für **alle** öffentlichen APIs:
+- Alle öffentlichen Klassen, Records und Interfaces
+- Alle öffentlichen Methoden und Funktionen
+- Alle öffentlichen Properties
+- Alle öffentlichen Typen und Konstanten
+
+**Dokumentationsebenen:**
+- **Minimum:** `<summary>` für alle öffentlichen Elemente
+- **Optimal:** Zusätzlich `<param>` für alle Parameter, `<returns>` für Funktionen mit Rückgabewert, `<exception>` für dokumentierte Exceptions und `<remarks>` für zusätzliche Hinweise, wenn hilfreich
 
 ```pascal
 /// <summary>
 /// Berechnet die Entfernung zwischen zwei Punkten
 /// </summary>
 /// <param name="APoint1">Erster Punkt</param>
-/// <param name="APoint2">Zweiter Punkt</param>
+/// <param name="AParam2">Zweiter Punkt</param>
 /// <returns>Entfernung als Double-Wert</returns>
 /// <exception cref="EArgumentException">
 /// Wird ausgelöst, wenn einer der Punkte nil ist
@@ -859,6 +1179,21 @@ type
 
     /// <summary>Vollständiger Name des Kunden</summary>
     property Name: string read FName write FName;
+  end;
+
+/// <summary>
+/// Informationen über einen einzelnen Stack-Frame
+/// </summary>
+type
+  TStackFrameInfo = record
+    /// <summary>Name des Moduls (EXE/DLL)</summary>
+    ModuleName: string;
+    /// <summary>Name der Prozedur/Funktion</summary>
+    ProcName: string;
+    /// <summary>Pfad zur Quelldatei</summary>
+    FileName: string;
+    /// <summary>Zeilennummer in der Quelldatei</summary>
+    Line: Integer;
   end;
 ```
 

@@ -172,6 +172,7 @@ procedure TryParseInteger(const AValue: string; out AResult: Integer; out ASucce
 - Fields: `F` prefix
 - Globals: `G` prefix (avoid)
 - PascalCase, no type prefixes (except component naming)
+- **Exception**: Simple loop counters may use lowercase single letters (`i`, `j`, `k`) without prefix
 
 ```pascal
 var
@@ -179,6 +180,21 @@ var
   LCustomerList: TObjectList<TCustomer>;
   LIndex: Integer;
   LFound: Boolean;
+
+// Loop counters - exception to the rule
+for var i := 0 to 10 do
+begin
+  // Simple loop counter without L prefix
+end;
+
+// Nested loops
+for var i := 0 to Rows - 1 do
+begin
+  for var j := 0 to Cols - 1 do
+  begin
+    Matrix[i, j] := 0;
+  end;
+end;
 ```
 
 ```pascal
@@ -197,6 +213,50 @@ var
   GAppTitle: string;
   GLogLevel: Integer;
 ```
+
+**Exception: Unit-internal global variables in implementation section**
+
+Global variables in the `implementation` section are acceptable for unit-internal singletons or state management:
+
+```pascal
+unit MyService;
+
+interface
+
+type
+  TMyService = class
+    class procedure Initialize;
+    class procedure Finalize;
+  end;
+
+implementation
+
+var
+  GServiceInstance: TMyService;  // Unit-internal, not visible from outside
+  GInitialized: Boolean = False;
+
+class procedure TMyService.Initialize;
+begin
+  if not GInitialized then
+  begin
+    GServiceInstance := TMyService.Create;
+    GInitialized := True;
+  end;
+end;
+
+class procedure TMyService.Finalize;
+begin
+  FreeAndNil(GServiceInstance);
+  GInitialized := False;
+end;
+
+end.
+```
+
+**Advantages:**
+- Not visible from outside (encapsulation)
+- Ideal for unit singletons
+- Avoids global namespace pollution
 
 #### 2.3.1 Component names
 
@@ -268,6 +328,10 @@ type
   TCustomer = class end;
   TOrderManager = class end;
   TDatabaseConnection = class end;
+
+  // Sealed Classes (utility classes without instances)
+  TPathUtils = class sealed end;
+  TStringUtils = class sealed end;
 
   // Interfaces (placeholders)
   ILogger = interface end;
@@ -409,9 +473,42 @@ except
 end;
 ```
 
+**Exception: Defensive programming in critical systems**
+
+In critical systems (e.g., exception handlers, logging, cleanup code), it may be necessary to suppress errors to prevent recursion or system crashes:
+
+```pascal
+// Exception handler must not throw exceptions itself
+procedure LogException(const E: Exception);
+begin
+  try
+    WriteToLogFile(E.Message);
+  except
+    // Silently ignore - logging must not fail
+    // Alternative: Fallback to OutputDebugString
+  end;
+end;
+
+// Cleanup code in finalization
+finalization
+  try
+    if Assigned(GResolver) then
+      FreeAndNil(GResolver);
+  except
+    // Silently ignore - finalization must complete
+  end;
+end.
+```
+
+**Important:** Such `except` blocks should:
+- Have a comment explaining why errors are suppressed
+- Only be used when absolutely necessary
+- Preferably have a fallback mechanism
+
 ### 4.2 Branches and loops
 
 - Prefer `begin..end` blocks for clarity, even on single-line branches
+- Loop counters may use lowercase single letters (`i`, `j`, `k`) without `L` prefix
 
 ```pascal
 if UserLoggedIn then
@@ -429,10 +526,21 @@ case DayOfTheWeek(Date) of // 1=Monday .. 7=Sunday
   // ...
 end;
 
-for I := 1 to 10 do
+// Simple loop counter
+for var i := 1 to 10 do
 begin
   if SomeCondition then
     Break; // no begin..end needed here
+end;
+
+// Traditional declaration
+var
+  i: Integer;
+begin
+  for i := 0 to List.Count - 1 do
+  begin
+    ProcessItem(List[i]);
+  end;
 end;
 ```
 
@@ -553,15 +661,135 @@ Customer.Address := 'Example Street';
 
 - Use records for simple, self-contained data structures
 - Prefix record names with `T`
+- **Record fields have NO prefixes** (no `F`, `L`, `G`) – they are always public
+- Avoid methods or complex logic inside records unless using `record helpers` or `record with methods`
+- Records are ideal for DTOs, geometry types, or simple value objects
 
 ```pascal
 type
   TPoint = record
-    X, Y: Integer;
+    X, Y: Integer;  // No F prefix for records!
+  end;
+
+  TStackFrameInfo = record
+    ModuleName: string;
+    ProcName: string;
+    FileName: string;
+    Line: Integer;
+    Address: Pointer;
   end;
 ```
 
-### 7.3 Enumerations
+**Comparison Class vs. Record:**
+
+```pascal
+// Class - private fields with F prefix
+type
+  TCustomer = class
+  private
+    FName: string;      // F prefix for private fields
+    FAge: Integer;
+  public
+    property Name: string read FName write FName;
+    property Age: Integer read FAge write FAge;
+  end;
+
+// Record - public fields without prefix
+type
+  TCustomerData = record
+    Name: string;       // No prefix - always public
+    Age: Integer;
+  end;
+```
+
+### 7.2a Sealed Classes for Utility Functions
+
+For pure utility classes without instances and state, use `class sealed` with only `class` methods.
+
+**When to use `sealed class` instead of `record`:**
+
+- **Record**: For data structures (DTOs, value objects)
+  ```pascal
+  type
+    TPoint = record
+      X, Y: Integer;
+    end;
+  ```
+
+- **Sealed Class**: For utility functions without data
+  ```pascal
+  type
+    TPathUtils = class sealed
+      class function FileExists(const APath: string): Boolean;
+      class procedure DeleteFile(const APath: string);
+    end;
+  ```
+
+**Advantages of `sealed` for utility classes:**
+
+- Prevents meaningless inheritance
+- Communicates design intent: "No instances, only functions"
+- Enables compiler optimizations
+- Follows best practices from other languages (C# `static class`, Java `final class`)
+
+**Comparison:**
+
+| Aspect | Record | Sealed Class | Regular Class |
+|--------|--------|--------------|---------------|
+| Purpose | Data structure | Utility functions | Objects with state |
+| Instances | Value semantics | None (class methods only) | Reference semantics |
+| Inheritance | No | No (sealed) | Yes (possible) |
+| Example | `TPoint`, `TRect` | `TPathUtils`, `TDXStacktrace` | `TCustomer`, `TOrder` |
+
+### 7.3 Class and Record Helpers
+
+Class and record helpers extend existing types with additional methods without modifying the original type. Use the suffix `Helper` **only** for actual class and record helpers.
+
+**Naming convention:**
+- Format: `T<TypeName>Helper`
+- The word "Helper" is **reserved** for class and record helpers only
+- Do NOT use "Helper" for sealed utility classes
+
+```pascal
+// Correct - Record Helper
+type
+  TPointHelper = record helper for TPoint
+    function Distance(const AOther: TPoint): Double;
+    function ToString: string;
+  end;
+
+// Correct - Class Helper
+type
+  TStringListHelper = class helper for TStringList
+    procedure SaveToFileUTF8(const AFileName: string);
+    function ContainsText(const AText: string): Boolean;
+  end;
+
+// WRONG - Not a helper, just a utility class
+type
+  TFileHelper = class sealed  // Should be TFileUtils or similar
+    class function FileExists(const APath: string): Boolean;
+  end;
+
+// Correct - Sealed utility class
+type
+  TFileUtils = class sealed
+    class function FileExists(const APath: string): Boolean;
+    class procedure DeleteFile(const APath: string);
+  end;
+```
+
+**When to use helpers:**
+- Extending RTL/VCL/FMX types without inheritance
+- Adding convenience methods to records
+- Backward compatibility when you can't modify the original type
+
+**Important notes:**
+- Only one helper can be active for a type in a given scope
+- Helpers cannot add fields, only methods
+- Helper methods have access to private members of the extended type
+
+### 7.4 Enumerations
 
 - Prefix enum types with `T`
 - Prefer dot-notation with `{$SCOPEDENUMS ON}`
@@ -576,7 +804,7 @@ begin
 end;
 ```
 
-### 7.4 Thread safety
+### 7.5 Thread safety
 
 Prefer `TMonitor` for synchronization in simple scenarios.
 
@@ -619,6 +847,87 @@ begin
 end;
 ```
 
+#### 8.1.1 TArray<T> vs. TList<T> vs. TObjectList<T>
+
+Choose the right collection type based on your use case:
+
+**TArray<T>** - For collections with fixed or rarely changing size:
+```pascal
+type
+  TStacktrace = TArray<TStackFrameInfo>;  // Fixed size after capture
+
+function GetTopCustomers: TArray<TCustomer>;  // Return value
+
+var
+  LNames: TArray<string>;
+begin
+  SetLength(LNames, 3);
+  LNames[0] := 'Alice';   // O(1) - very fast, no reallocation
+  LNames[1] := 'Bob';
+  LNames[2] := 'Charlie';
+  LNames[0] := 'John';    // Changing elements is O(1)
+end;
+```
+
+**Advantages:**
+- Low memory overhead
+- Very fast index access and element modification (O(1))
+- Ideal for return values and fixed-size collections
+- No memory management needed (automatically freed)
+- Elements can be modified efficiently in-place
+
+**TList<T>** - For dynamic lists of value types:
+```pascal
+var
+  LNumbers: TList<Integer>;
+  LNames: TList<string>;
+begin
+  LNumbers := TList<Integer>.Create;
+  try
+    LNumbers.Add(42);
+    LNumbers.Add(100);
+  finally
+    FreeAndNil(LNumbers);
+  end;
+end;
+```
+
+**Advantages:**
+- Dynamic add/remove
+- Built-in sorting and searching
+- Ideal for value types (Integer, String, Records)
+
+**TObjectList<T>** - For lists of objects with ownership:
+```pascal
+var
+  LCustomers: TObjectList<TCustomer>;
+begin
+  LCustomers := TObjectList<TCustomer>.Create(True);  // True = OwnsObjects
+  try
+    LCustomers.Add(TCustomer.Create('Max'));
+    // Objects are automatically freed
+  finally
+    FreeAndNil(LCustomers);
+  end;
+end;
+```
+
+**Advantages:**
+- Automatic memory management for objects (when OwnsObjects = True)
+- Prevents memory leaks
+- Ideal for object collections
+
+**Decision guide:**
+
+| Criterion | TArray<T> | TList<T> | TObjectList<T> |
+|-----------|-----------|----------|----------------|
+| Size changes | Rarely (SetLength) | Frequently (Add/Delete) | Frequently (Add/Delete) |
+| Element modification | Very fast (O(1)) | Fast (O(1)) | Fast (O(1)) |
+| Content | Any type | Value types | Objects |
+| Ownership | N/A | N/A | Yes (OwnsObjects) |
+| Memory overhead | Minimal | Medium | Medium |
+| Use case | Fixed-size collections, return values | Dynamic lists | Object collections |
+
 ### 8.2 Anonymous methods
 
 Anonymous methods are useful for short, local functionality.
@@ -637,31 +946,32 @@ end;
 
 ### 8.3 Inline variables (Delphi 10.3+)
 
-Declare variables at the point of use for better readability.
+Declare variables at the point of use for better readability. For loops, prefer inline declaration.
 
 ```pascal
 // Traditional
 procedure ProcessData;
 var
-  LIndex: Integer;
+  i: Integer;
   LCustomer: TCustomer;
 begin
-  for LIndex := 0 to CustomerList.Count - 1 do
+  for i := 0 to CustomerList.Count - 1 do
   begin
-    LCustomer := CustomerList[LIndex];
+    LCustomer := CustomerList[i];
     // ...
   end;
 end;
 
-// With inline variables
+// With inline variables (preferred from Delphi 10.3+)
 procedure ProcessData;
 begin
-  for var LIndex := 0 to CustomerList.Count - 1 do
+  for var i := 0 to CustomerList.Count - 1 do
   begin
-    var LCustomer := CustomerList[LIndex];
+    var LCustomer := CustomerList[i];
     // ...
   end;
 
+  // Also useful for other variables
   var LResult := CalculateSomething;
   if LResult > 0 then
     ProcessResult(LResult);
@@ -723,7 +1033,15 @@ type
 
 ## 9. Documentation
 
-Use XML documentation comments for public APIs.
+Use XML documentation comments (`///`) consistently for **all** public APIs:
+- All public classes, records, and interfaces
+- All public methods and functions
+- All public properties
+- All public types and constants
+
+**Documentation levels:**
+- **Minimum:** `<summary>` for all public elements
+- **Optimal:** Additionally include `<param>` for all parameters, `<returns>` for functions with return values, `<exception>` for documented exceptions, and `<remarks>` for additional notes when helpful
 
 ```pascal
 /// <summary>
@@ -736,6 +1054,41 @@ Use XML documentation comments for public APIs.
 /// Raised when one of the points is nil.
 /// </exception>
 function CalculateDistance(const APoint1, APoint2: TPoint): Double;
+
+/// <summary>
+/// Represents a customer in the system
+/// </summary>
+/// <remarks>
+/// This class encapsulates all customer-related data and operations.
+/// Use the CreateCustomer factory method for instantiation.
+/// </remarks>
+type
+  TCustomer = class
+  private
+    FID: Integer;
+    FName: string;
+  public
+    /// <summary>Unique customer ID</summary>
+    property ID: Integer read FID write FID;
+
+    /// <summary>Full name of the customer</summary>
+    property Name: string read FName write FName;
+  end;
+
+/// <summary>
+/// Information about a single stack frame
+/// </summary>
+type
+  TStackFrameInfo = record
+    /// <summary>Name of the module (EXE/DLL)</summary>
+    ModuleName: string;
+    /// <summary>Procedure/function name</summary>
+    ProcName: string;
+    /// <summary>Source file path</summary>
+    FileName: string;
+    /// <summary>Line number in source file</summary>
+    Line: Integer;
+  end;
 ```
 
 ---
