@@ -89,6 +89,17 @@ var LNumbers: TList<Integer>;
 var LCustomers: TObjectList<TCustomer>;
 ```
 
+### **Unit Names (Namespace Hierarchy)**
+```pascal
+// Forms end with .Form.pas
+unit Main.Form;                    // TFormMain / FormMain
+unit Customer.Details.Form;        // TFormCustomerDetails / FormCustomerDetails
+
+// Data modules end with .DM.pas
+unit Main.DM;                      // TDMMain / DMMain
+unit Customer.Details.DM;          // TDMCustomerDetails / DMCustomerDetails
+```
+
 ### **Documentation**
 ```pascal
 /// <summary>
@@ -377,6 +388,8 @@ FormSettings: TFormSettings;
 DMMain: TDataModule;
 ```
 
+**Note:** For naming conventions of related units, see [Section 3.1 - Unit Naming Conventions and Namespace Hierarchy](#31-unit-naming-conventions-and-namespace-hierarchy).
+
 ### 2.4 Constants
 
 - Use `c` for general constants, `sc` for string constants
@@ -447,6 +460,74 @@ type
 - Implementation section (private implementation)
 - Initialization/Finalization only when necessary
 - Group uses clauses logically
+
+### 3.1 Unit Naming Conventions and Namespace Hierarchy
+
+Modern Delphi projects should use a consistent namespace hierarchy with context-based structure. This significantly improves organization, maintainability, and clarity in larger projects.
+
+**Core Principles:**
+- Unit names follow a hierarchical structure with dot notation
+- File name matches the unit name (e.g., `Main.Form.pas` for `unit Main.Form`)
+- Forms end with `.Form.pas`
+- Data modules end with `.DM.pas`
+- Nested hierarchies are allowed and recommended
+
+**Examples for Main Components:**
+
+```pascal
+// Main form
+unit Main.Form;
+// File: Main.Form.pas
+// Class: TFormMain
+// Instance: FormMain
+
+// Main data module (usually contains the central DB connection)
+unit Main.DM;
+// File: Main.DM.pas
+// Class: TDMMain
+// Instance: DMMain
+```
+
+**Examples for Nested Hierarchies:**
+
+```pascal
+// Customer details form
+unit Customer.Details.Form;
+// File: Customer.Details.Form.pas
+// Class: TFormCustomerDetails
+// Instance: FormCustomerDetails
+
+// Customer details data module (only queries for customer details)
+unit Customer.Details.DM;
+// File: Customer.Details.DM.pas
+// Class: TDMCustomerDetails
+// Instance: DMCustomerDetails
+
+// Additional examples
+unit Customer.List.Form;        // Customer list
+unit Customer.Edit.Form;        // Customer editing
+unit Reports.Sales.Form;        // Sales reports
+unit Reports.Sales.DM;          // Data module for sales reports
+unit Settings.Database.Form;    // Database settings
+```
+
+**Advantages of this Structure:**
+- Clear association of related units
+- Better overview in large projects
+- Easier to find related components
+- Avoids naming conflicts
+- Logical grouping in Project Manager and uses clauses
+
+**Naming Conventions for Classes and Instances:**
+
+| Unit Name | File Name | Class Name | Instance Name |
+|-----------|-----------|------------|---------------|
+| `Main.Form` | `Main.Form.pas` | `TFormMain` | `FormMain` |
+| `Main.DM` | `Main.DM.pas` | `TDMMain` | `DMMain` |
+| `Customer.Details.Form` | `Customer.Details.Form.pas` | `TFormCustomerDetails` | `FormCustomerDetails` |
+| `Customer.Details.DM` | `Customer.Details.DM.pas` | `TDMCustomerDetails` | `DMCustomerDetails` |
+
+### 3.2 Example of Complete Unit Structure
 
 ```pascal
 unit Customer.Manager;

@@ -89,6 +89,17 @@ var LNumbers: TList<Integer>;
 var LCustomers: TObjectList<TCustomer>;
 ```
 
+### **Unit-Namen (Namespace-Hierarchie)**
+```pascal
+// Formulare enden auf .Form.pas
+unit Main.Form;                    // TFormMain / FormMain
+unit Customer.Details.Form;        // TFormCustomerDetails / FormCustomerDetails
+
+// Datenmodule enden auf .DM.pas
+unit Main.DM;                      // TDMMain / DMMain
+unit Customer.Details.DM;          // TDMCustomerDetails / DMCustomerDetails
+```
+
 ### **Dokumentation**
 ```pascal
 /// <summary>
@@ -388,6 +399,8 @@ FormSettings: TFormSettings;
 DMMain: TDataModule;
 ```
 
+**Hinweis:** Für die Benennung der zugehörigen Units siehe [Abschnitt 3.1 - Unit-Namenskonventionen und Namespace-Hierarchie](#31-unit-namenskonventionen-und-namespace-hierarchie).
+
 ### **2.4 Konstanten**
 
 Verwende das Präfix `c` für allgemeine Konstanten, `sc` für String-Konstanten. Verwende `ALL_CAPS` nur bei Konstanten mit systemweitem oder buildrelevantem Bezug.
@@ -464,6 +477,74 @@ Eine Unit sollte eine klare, logische Struktur haben:
 - Implementation-Abschnitt (private Implementierung)
 - Initialisierung / Finalisierung nur bei Bedarf
 - Uses-Klauseln sinnvoll gruppieren
+
+### **3.1 Unit-Namenskonventionen und Namespace-Hierarchie**
+
+Moderne Delphi-Projekte sollten eine konsistente Namespace-Hierarchie mit kontextbezogener Struktur verwenden. Dies verbessert die Organisation, Wartbarkeit und Übersichtlichkeit größerer Projekte erheblich.
+
+**Grundprinzipien:**
+- Unit-Namen folgen einer hierarchischen Struktur mit Punktnotation
+- Der Dateiname entspricht dem Unit-Namen (z.B. `Main.Form.pas` für `unit Main.Form`)
+- Formulare enden auf `.Form.pas`
+- Datenmodule enden auf `.DM.pas`
+- Geschachtelte Hierarchien sind erlaubt und empfohlen
+
+**Beispiele für Hauptkomponenten:**
+
+```pascal
+// Hauptformular
+unit Main.Form;
+// Datei: Main.Form.pas
+// Klasse: TFormMain
+// Instanz: FormMain
+
+// Haupt-Datenmodul (enthält meist die zentrale DB-Connection)
+unit Main.DM;
+// Datei: Main.DM.pas
+// Klasse: TDMMain
+// Instanz: DMMain
+```
+
+**Beispiele für geschachtelte Hierarchien:**
+
+```pascal
+// Kundendetails-Formular
+unit Customer.Details.Form;
+// Datei: Customer.Details.Form.pas
+// Klasse: TFormCustomerDetails
+// Instanz: FormCustomerDetails
+
+// Kundendetails-Datenmodul (nur Queries für Kundendetails)
+unit Customer.Details.DM;
+// Datei: Customer.Details.DM.pas
+// Klasse: TDMCustomerDetails
+// Instanz: DMCustomerDetails
+
+// Weitere Beispiele
+unit Customer.List.Form;        // Kundenliste
+unit Customer.Edit.Form;        // Kundenbearbeitung
+unit Reports.Sales.Form;        // Verkaufsberichte
+unit Reports.Sales.DM;          // Datenmodul für Verkaufsberichte
+unit Settings.Database.Form;    // Datenbankeinstellungen
+```
+
+**Vorteile dieser Struktur:**
+- Klare Zuordnung von zusammengehörigen Units
+- Bessere Übersicht in großen Projekten
+- Einfacheres Auffinden verwandter Komponenten
+- Vermeidung von Namenskonflikten
+- Logische Gruppierung im Project Manager und in der Uses-Klausel
+
+**Namenskonventionen für Klassen und Instanzen:**
+
+| Unit-Name | Dateiname | Klassenname | Instanzname |
+|-----------|-----------|-------------|-------------|
+| `Main.Form` | `Main.Form.pas` | `TFormMain` | `FormMain` |
+| `Main.DM` | `Main.DM.pas` | `TDMMain` | `DMMain` |
+| `Customer.Details.Form` | `Customer.Details.Form.pas` | `TFormCustomerDetails` | `FormCustomerDetails` |
+| `Customer.Details.DM` | `Customer.Details.DM.pas` | `TDMCustomerDetails` | `DMCustomerDetails` |
+
+### **3.2 Beispiel einer vollständigen Unit-Struktur**
 
 ```pascal
 unit Customer.Manager;
