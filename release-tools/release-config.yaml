@@ -1,0 +1,162 @@
+# Delphi Standards Release Configuration
+# ========================================
+# This file defines the structure and content of releases
+
+release:
+  # Version information (update for each release)
+  version: "2.1.0"
+  date: "2025-10-09"
+  
+  # Release metadata
+  name: "Delphi Style Guide"
+  author: "Olaf Monien"
+  email: "olaf@monien.net"
+  repository: "https://github.com/omonien/DelphiStandards"
+  license: "MIT"
+
+# Source files to include in release
+sources:
+  # Markdown style guides (will be converted to PDF)
+  style_guides:
+    - name: "Delphi Style Guide DE.md"
+      language: "German"
+      convert_to_pdf: true
+      
+    - name: "Delphi Style Guide EN.md"
+      language: "English"
+      convert_to_pdf: true
+  
+  # Git configuration templates
+  git_templates:
+    - name: "Delphi GitIgnore.txt"
+      description: "Curated .gitignore template for Delphi projects"
+      rename_to: ".gitignore"
+      
+    - name: "Delphi GitAttributes.txt"
+      description: "Git attributes template for Delphi projects"
+      rename_to: ".gitattributes"
+  
+  # Documentation files
+  documentation:
+    - name: "LICENSE.md"
+      required: true
+      
+    - name: "README.md"
+      required: true
+      
+    - name: "README.de.md"
+      required: true
+
+# Release output configuration
+output:
+  # Directory structure
+  base_dir: "release-assets"
+  version_dir: "v{version}"  # {version} will be replaced with actual version
+  
+  # Archive settings
+  archive:
+    format: "zip"
+    name: "DelphiStandards-v{version}.zip"
+    compression: "deflate"
+  
+  # Files to include in release archive
+  include:
+    # PDF versions of style guides (generated from MD)
+    - "Delphi Style Guide DE.pdf"
+    - "Delphi Style Guide EN.pdf"
+
+    # Git configuration files (renamed from templates)
+    - ".gitignore"
+    - ".gitattributes"
+
+    # Documentation
+    - "LICENSE.md"
+    - "README.md"
+    - "README.de.md"
+    - "RELEASE_NOTES.md"
+
+# PDF generation settings
+pdf_generation:
+  enabled: true
+  tool: "pandoc"  # or "wkhtmltopdf", "weasyprint", etc.
+  
+  # Pandoc-specific settings
+  pandoc:
+    engine: "xelatex"  # or "pdflatex", "lualatex"
+    options:
+      - "--toc"  # Table of contents
+      - "--toc-depth=2"
+      - "--number-sections"
+      - "-V geometry:margin=2.5cm"
+      - "-V fontsize=11pt"
+      - "-V documentclass=article"
+      - "-V papersize=a4"
+      - "-V colorlinks=true"
+      - "-V linkcolor=blue"
+      - "-V urlcolor=blue"
+    
+    # Metadata for PDF
+    metadata:
+      title: "Delphi Style Guide"
+      author: "Olaf Monien"
+      subject: "Coding Standards for Delphi"
+      keywords: "Delphi, Style Guide, Coding Standards, Best Practices"
+
+# Git tagging
+git:
+  create_tag: true
+  tag_format: "v{version}"
+  tag_message: |
+    Release v{version} - {release_title}
+    
+    {release_description}
+  
+  # Commit message for release preparation
+  commit_message: "Prepare release v{version}"
+
+# Release notes generation
+release_notes:
+  auto_generate: true
+  template: "RELEASE_NOTES_TEMPLATE.md"
+  include_changelog: true
+  include_file_list: true
+
+# Validation checks before release
+validation:
+  # Check version consistency
+  check_version_in_files:
+    - "Delphi Style Guide DE.md"
+    - "Delphi Style Guide EN.md"
+  
+  # Check required files exist
+  check_files_exist: true
+  
+  # Verify no uncommitted changes
+  check_git_clean: false  # Set to true if you want to enforce clean working tree
+  
+  # Check that both language versions are in sync
+  check_language_sync: true
+
+# Post-release actions
+post_release:
+  # Create GitHub release
+  github_release:
+    enabled: false  # Set to true to auto-create GitHub release
+    draft: true
+    prerelease: false
+    
+  # Notifications
+  notifications:
+    enabled: false
+    channels: []
+
+# Cleanup settings
+cleanup:
+  # Remove temporary files after release
+  remove_temp_files: true
+  temp_extensions:
+    - ".tmp"
+    - ".log"
+    - ".aux"
+    - ".toc"
+

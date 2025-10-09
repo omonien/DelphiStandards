@@ -40,6 +40,7 @@ Beyond team settings, a consistent Style Guide also benefits solo developers ove
 - Git Attributes template: [Delphi GitAttributes.txt](Delphi%20GitAttributes.txt)
 - Delphi Style Guide (DE): [Delphi Style Guide DE.md](Delphi%20Style%20Guide%20DE.md)
 - Delphi Style Guide (EN): [Delphi Style Guide EN.md](Delphi%20Style%20Guide%20EN.md)
+- Release Tools: [release-tools/](release-tools/) - Automated release creation
 
 Note: The style guide is maintained in German and English. Please keep both documents in sync (maintainer will handle synchronization post-merge if needed).
 
@@ -59,6 +60,15 @@ Note: The style guide is maintained in German and English. Please keep both docu
 - It normalizes EOLs for Delphi sources (CRLF) and marks binary artifacts (.res, .ico, .dcu, .bpl, .dll, .exe) as binary.
 - If your project stores .dfm/.fmx as text (default), keep the text rules. If stored as binary, switch to the binary rules in the template.
 - For existing repos, after adding run: `git add --renormalize .` and commit the changes.
+
+## Releases
+
+Official releases are available in the [release-assets/](release-assets/) directory. Each release includes:
+- PDF versions of the style guides (German and English)
+- Git templates (.gitignore and .gitattributes)
+- Documentation
+
+For creating new releases, see [release-tools/README.md](release-tools/README.md).
 
 ## Contributing
 
