@@ -124,3 +124,9 @@ GTAGS
 !.vscode/extensions.json
 !.vscode/tasks.json
 !.vscode/launch.json
+
+# FinalBuilder
+*.fbpInf
+*.fbl8
+*.fbpbrk
+*.fb8lck
