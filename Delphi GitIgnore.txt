@@ -126,7 +126,7 @@ GTAGS
 !.vscode/launch.json
 
 # FinalBuilder
-*.fbpInf
-*.fbl8
-*.fbpbrk
-*.fb8lck
+*.fbpInf    # Project info cache
+*.fbl8      # Log files
+*.fbpbrk    # Breakpoints
+*.fb8lck    # Lock files
