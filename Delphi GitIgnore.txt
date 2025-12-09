@@ -130,3 +130,6 @@ GTAGS
 *.fbl8      # Log files
 *.fbpbrk    # Breakpoints
 *.fb8lck    # Lock files
+
+# Claude Code local settings
+.claude/settings.local.json
