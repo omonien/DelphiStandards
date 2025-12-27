@@ -40,6 +40,7 @@ Auch außerhalb von Teams profitieren Einzelentwickler langfristig von einem kon
 - Git Attributes‑Vorlage: [Delphi GitAttributes.txt](Delphi%20GitAttributes.txt)
 - Delphi Style Guide (DE): [Delphi Style Guide DE.md](Delphi%20Style%20Guide%20DE.md)
 - Delphi Style Guide (EN): [Delphi Style Guide EN.md](Delphi%20Style%20Guide%20EN.md)
+- Universelles Build-Skript: [DelphiBuildDPROJ.ps1](DelphiBuildDPROJ.ps1) - PowerShell-Skript zum Bauen von Delphi-Projekten per Kommandozeile
 - Release Tools: [release-tools/](release-tools/) - Automatisierte Release-Erstellung
 
 Hinweis: Der Style Guide wird synchron in Deutsch und Englisch gepflegt. Änderungen sollten immer in beiden Dokumenten erfolgen.
@@ -60,6 +61,45 @@ Hinweis: Der Style Guide wird synchron in Deutsch und Englisch gepflegt. Änderu
 - Die Datei normalisiert Zeilenenden für Delphi‑Quellen (CRLF) und markiert Binärartefakte (.res, .ico, .dcu, .bpl, .dll, .exe) als binary.
 - Werden .dfm/.fmx im Projekt als Text gespeichert (Standard), die Text‑Regeln beibehalten. Bei Binärspeicherung die Binary‑Regeln aus dem Template aktivieren.
 - Für bestehende Repos nach dem Hinzufügen ausführen: `git add --renormalize .` und die Änderungen committen.
+
+## Build-Automatisierung
+
+### Universelles DPROJ Build-Skript
+
+Das Repository enthält ein universelles PowerShell-Skript zum Bauen von Delphi-Projekten per Kommandozeile. Dies ist ideal für CI/CD-Pipelines, automatisierte Builds oder jedes Szenario, in dem Delphi-Projekte ohne IDE gebaut werden müssen.
+
+**Features:**
+- Erkennt automatisch die neueste installierte Delphi-Version aus der Windows-Registry
+- Unterstützt alle Delphi-Projektdateien (.dproj)
+- Konfigurierbare Build-Konfiguration (Debug/Release) und Plattform (Win32/Win64)
+- Farbige Konsolenausgabe für bessere Lesbarkeit
+- Verbose-Modus für detaillierte Build-Informationen
+- Keine Abhängigkeiten von spezifischen Projekten - funktioniert mit jedem Delphi-Projekt
+
+**Verwendung:**
+```powershell
+# Einfache Verwendung (erkennt Delphi-Version automatisch, baut Debug/Win32)
+.\DelphiBuildDPROJ.ps1 -ProjectFile "MeinProjekt.dproj"
+
+# Release für Win64 bauen
+.\DelphiBuildDPROJ.ps1 -ProjectFile "MeinProjekt.dproj" -Config Release -Platform Win64
+
+# Spezifische Delphi-Version mit ausführlicher Ausgabe verwenden
+.\DelphiBuildDPROJ.ps1 -ProjectFile "MeinProjekt.dproj" -DelphiVersion "22.0" -VerboseOutput
+```
+
+**Parameter:**
+- `-ProjectFile` (erforderlich): Pfad zur .dproj-Datei, die gebaut werden soll
+- `-Config`: Build-Konfiguration (Standard: "Debug")
+- `-Platform`: Zielplattform (Standard: "Win32")
+- `-DelphiVersion`: Zu verwendende Delphi-Version (Standard: automatische Erkennung der neuesten Version)
+- `-VerboseOutput`: Aktiviert ausführliche MSBuild-Ausgabe
+
+**Voraussetzungen:**
+- Embarcadero Delphi installiert
+- MSBuild verfügbar (Visual Studio Build Tools oder vollständiges Visual Studio)
+
+Weitere Details finden Sie in der Skript-Dokumentation in [DelphiBuildDPROJ.ps1](DelphiBuildDPROJ.ps1).
 
 ## Releases
 
