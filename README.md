@@ -75,6 +75,8 @@ The repository includes a universal PowerShell script for building Delphi projec
 - Colored console output for better readability
 - Verbose mode for detailed build information
 - No dependencies on specific projects - works with any Delphi project
+- Configurable defaults section for easy customization
+- Robust error handling and clean exit codes for CI/CD integration
 
 **Usage:**
 ```powershell

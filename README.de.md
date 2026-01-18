@@ -75,6 +75,8 @@ Das Repository enthält ein universelles PowerShell-Skript zum Bauen von Delphi-
 - Farbige Konsolenausgabe für bessere Lesbarkeit
 - Verbose-Modus für detaillierte Build-Informationen
 - Keine Abhängigkeiten von spezifischen Projekten - funktioniert mit jedem Delphi-Projekt
+- Konfigurierbare Defaults-Sektion zur einfachen Anpassung
+- Robuste Fehlerbehandlung und saubere Exit-Codes für CI/CD-Integration
 
 **Verwendung:**
 ```powershell

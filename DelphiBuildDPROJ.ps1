@@ -1,21 +1,20 @@
-﻿# Universal DPROJ Build Script
+# =============================================================================
+# DelphiBuildDPROJ.ps1 - Universal Delphi Project Builder
+# =============================================================================
 # Builds any Delphi project file (.dproj) with MSBuild
 # Can be used in any Delphi project - no dependencies to specific projects
 #
 # USAGE:
-#   .\Build-DPROJ.ps1 -ProjectFile "MyProject.dproj" [-Config "Debug|Release"] [-Platform "Win32|Win64"] [-DelphiVersion "XX.X"] [-VerboseOutput]
+#   .\DelphiBuildDPROJ.ps1 -ProjectFile "MyProject.dproj"
+#   .\DelphiBuildDPROJ.ps1 -ProjectFile "MyProject.dproj" -Config Release -Platform Win64
+#   .\DelphiBuildDPROJ.ps1 -ProjectFile "MyProject.dproj" -DelphiVersion "23.0" -VerboseOutput
 #
 # PARAMETERS:
 #   -ProjectFile     : Path to the .dproj file to build (mandatory)
 #   -Config          : Build configuration (default: "Debug")
-#   -Platform        : Target platform (default: "Win32")
+#   -Platform        : Target platform (default: "Win64")
 #   -DelphiVersion   : Delphi version to use (default: auto-detect latest)
 #   -VerboseOutput   : Enable verbose MSBuild output
-#
-# EXAMPLES:
-#   .\Build-DPROJ.ps1 -ProjectFile "MyApp.dproj"
-#   .\Build-DPROJ.ps1 -ProjectFile "MyApp.dproj" -Config Release -Platform Win64
-#   .\Build-DPROJ.ps1 -ProjectFile "MyApp.dproj" -DelphiVersion "22.0" -VerboseOutput
 #
 # REQUIREMENTS:
 #   - Embarcadero Delphi installed
@@ -23,26 +22,45 @@
 #
 # AUTO-DETECTION:
 #   The script automatically detects the latest installed Delphi version by reading:
-#   Registry: HKEY_LOCAL_MACHINE\SOFTWARE\Embarcadero\BDS (and Wow6432Node for 32-bit on 64-bit)
+#   Registry: HKEY_LOCAL_MACHINE\SOFTWARE\Embarcadero\BDS (and Wow6432Node for 32-bit)
 #
+# =============================================================================
 
 param(
     [Parameter(Mandatory=$true)]
     [string]$ProjectFile,
 
-    [string]$Config = "Debug",
-    [string]$Platform = "Win32",
+    [string]$Config = "",
+    [string]$Platform = "",
     [string]$DelphiVersion = "",
     [switch]$VerboseOutput
 )
 
-# Color output functions
+# =============================================================================
+# CONFIGURATION - Edit these defaults as needed
+# =============================================================================
+$DefaultConfig        = "Debug"
+$DefaultPlatform      = "Win32"
+$DefaultDelphiVersion = ""  # Empty = auto-detect latest installed version
+# =============================================================================
+
+# Apply defaults if not specified
+if ([string]::IsNullOrEmpty($Config)) { $Config = $DefaultConfig }
+if ([string]::IsNullOrEmpty($Platform)) { $Platform = $DefaultPlatform }
+if ([string]::IsNullOrEmpty($DelphiVersion)) { $DelphiVersion = $DefaultDelphiVersion }
+
+# -----------------------------------------------------------------------------
+# Helper Functions (Note: Write-Warn/Write-Err to avoid PowerShell cmdlet conflicts)
+# -----------------------------------------------------------------------------
 function Write-Info($Message) { Write-Host $Message -ForegroundColor Cyan }
 function Write-Success($Message) { Write-Host $Message -ForegroundColor Green }
-function Write-Warning($Message) { Write-Host $Message -ForegroundColor Yellow }
-function Write-Error($Message) { Write-Host $Message -ForegroundColor Red }
+function Write-Warn($Message) { Write-Host $Message -ForegroundColor Yellow }
+function Write-Err($Message) { Write-Host $Message -ForegroundColor Red }
 function Write-Detail($Message) { Write-Host $Message -ForegroundColor Gray }
 
+# -----------------------------------------------------------------------------
+# Get-LatestDelphiVersion
+# -----------------------------------------------------------------------------
 function Get-LatestDelphiVersion {
     <#
     .SYNOPSIS
@@ -56,9 +74,8 @@ function Get-LatestDelphiVersion {
     PSCustomObject with Version and RootDir properties, or $null if none found
     #>
 
-    # Registry paths to check (both 64-bit and 32-bit registry views)
     $RegistryPaths = @(
-        "HKLM:\SOFTWARE\Embarcadero\BDS",           # 64-bit registry
+        "HKLM:\SOFTWARE\Embarcadero\BDS",            # 64-bit registry
         "HKLM:\SOFTWARE\WOW6432Node\Embarcadero\BDS" # 32-bit registry on 64-bit Windows
     )
 
@@ -66,120 +83,94 @@ function Get-LatestDelphiVersion {
 
     foreach ($RegPath in $RegistryPaths) {
         if (Test-Path $RegPath) {
-            Write-Host "  Scanning registry path: $RegPath" -ForegroundColor Gray
-
+            Write-Detail "  Scanning registry: $RegPath"
             try {
                 $BDSKeys = Get-ChildItem -Path $RegPath -ErrorAction SilentlyContinue
-
                 foreach ($Key in $BDSKeys) {
                     $VersionName = $Key.PSChildName
-
-                    # Check if this looks like a version number (e.g., "23.0", "22.0")
                     if ($VersionName -match '^\d+\.\d+$') {
                         try {
-                            # Get the RootDir value to verify it's a valid installation
                             $RootDir = Get-ItemProperty -Path $Key.PSPath -Name "RootDir" -ErrorAction SilentlyContinue
-
                             if ($RootDir -and $RootDir.RootDir -and (Test-Path $RootDir.RootDir)) {
                                 $FoundVersions += [PSCustomObject]@{
                                     Version = $VersionName
                                     RootDir = $RootDir.RootDir
                                     RegistryPath = $Key.PSPath
                                 }
-                                Write-Host "  Found Delphi $VersionName at: $($RootDir.RootDir)" -ForegroundColor Gray
+                                Write-Detail "  Found Delphi $VersionName at: $($RootDir.RootDir)"
                             }
-                        }
-                        catch {
-                            # Silently ignore versions we can't read
-                        }
+                        } catch { }
                     }
                 }
-            }
-            catch {
-                # Silently ignore registry paths we can't access
-            }
+            } catch { }
         }
     }
 
     if ($FoundVersions.Count -eq 0) {
-        Write-Warning "No Delphi installations found in Windows Registry"
-        Write-Warning "Checked registry paths:"
-        foreach ($Path in $RegistryPaths) {
-            Write-Warning "  $Path"
-        }
+        Write-Warn "No Delphi installations found in Windows Registry"
         return $null
     }
 
-    # Sort versions numerically and get the latest
     $SortedVersions = $FoundVersions | Sort-Object { [Version]$_.Version } -Descending
     $LatestVersion = $SortedVersions[0]
 
-    Write-Host "  Auto-detected Delphi versions: $($SortedVersions.Version -join ', ')" -ForegroundColor Gray
-    Write-Host "  Using latest version: $($LatestVersion.Version)" -ForegroundColor Gray
+    Write-Detail "  Available versions: $($SortedVersions.Version -join ', ')"
+    Write-Detail "  Using latest: $($LatestVersion.Version)"
 
     return $LatestVersion
 }
 
+# -----------------------------------------------------------------------------
+# Initialize-DelphiEnvironment
+# -----------------------------------------------------------------------------
 function Initialize-DelphiEnvironment {
-    param([string]$DelphiVersion)
+    param([string]$Version)
 
     Write-Info "Initializing Delphi environment..."
 
-    # Auto-detect Delphi version if not specified
-    if ([string]::IsNullOrEmpty($DelphiVersion)) {
-        Write-Warning "No Delphi version specified, auto-detecting..."
+    if ([string]::IsNullOrEmpty($Version)) {
+        Write-Warn "No Delphi version specified, auto-detecting..."
         $DelphiInfo = Get-LatestDelphiVersion
 
         if ($null -eq $DelphiInfo -or [string]::IsNullOrEmpty($DelphiInfo.Version)) {
-            Write-Error "Could not auto-detect Delphi version and none was specified"
-            Write-Error "Please specify a Delphi version using the -DelphiVersion parameter"
-            Write-Error "Or ensure Delphi is properly installed and registered in Windows Registry"
+            Write-Err "Could not auto-detect Delphi version"
+            Write-Err "Please specify a version using -DelphiVersion parameter"
             exit 1
         }
 
-        $DelphiVersion = $DelphiInfo.Version
+        $Version = $DelphiInfo.Version
         $DelphiPath = $DelphiInfo.RootDir
-        Write-Info "Auto-detected and using Delphi version: $DelphiVersion"
-        Write-Detail "Installation path: $DelphiPath"
+        Write-Info "Using Delphi $Version"
     } else {
-        Write-Detail "Using specified Delphi version: $DelphiVersion"
-        # Use default path for manually specified version
-        $DelphiPath = "C:\Program Files (x86)\Embarcadero\Studio\$DelphiVersion"
+        Write-Detail "Using specified Delphi version: $Version"
+        $DelphiPath = "C:\Program Files (x86)\Embarcadero\Studio\$Version"
     }
 
-    # Set Delphi paths
     $RSVars = Join-Path $DelphiPath "bin\rsvars.bat"
-
-    # Check if rsvars.bat exists
     if (-not (Test-Path $RSVars)) {
-        Write-Error "rsvars.bat not found at $RSVars"
-        Write-Error "Please check Delphi installation or adjust DelphiVersion parameter"
-        Write-Error "Current DelphiVersion: $DelphiVersion"
+        Write-Err "rsvars.bat not found at: $RSVars"
+        Write-Err "Check Delphi installation or -DelphiVersion parameter"
         exit 1
     }
 
-    Write-Warning "Setting up Delphi environment..."
+    Write-Warn "Loading Delphi environment..."
 
-    # Execute rsvars.bat and capture environment variables
+    # Execute rsvars.bat and capture environment
     $tempFile = [System.IO.Path]::GetTempFileName()
-    cmd /c "`"$RSVars`" && set > `"$tempFile`""
+    cmd /c "`"$RSVars`" && set > `"$tempFile`"" 2>$null
 
-    # Read environment variables from temp file
     Get-Content $tempFile | ForEach-Object {
         if ($_ -match "^(.*?)=(.*)$") {
-            $name = $matches[1]
-            $value = $matches[2]
-            Set-Item -Path "env:$name" -Value $value
+            Set-Item -Path "env:$($matches[1])" -Value $matches[2]
         }
     }
-    Remove-Item $tempFile
+    Remove-Item $tempFile -ErrorAction SilentlyContinue
 
-    # Now find MSBuild (after rsvars.bat has updated PATH)
+    # Find MSBuild
     $MSBuild = Get-Command msbuild.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
     if (-not $MSBuild) {
-        Write-Error "msbuild.exe not found in PATH even after running rsvars.bat"
-        Write-Error "Please ensure MSBuild is installed (Visual Studio or Build Tools)"
-        Write-Error "Delphi's rsvars.bat should add MSBuild to PATH"
+        Write-Err "msbuild.exe not found in PATH"
+        Write-Err "Ensure MSBuild is installed (Visual Studio or Build Tools)"
         exit 1
     }
 
@@ -188,6 +179,9 @@ function Initialize-DelphiEnvironment {
     return $MSBuild
 }
 
+# -----------------------------------------------------------------------------
+# Build-DPROJProject
+# -----------------------------------------------------------------------------
 function Build-DPROJProject {
     param(
         [string]$ProjectFile,
@@ -196,24 +190,21 @@ function Build-DPROJProject {
         [string]$MSBuild,
         [bool]$VerboseOutput
     )
-    
-    # Validate project file
+
     if (-not (Test-Path $ProjectFile)) {
-        Write-Error "Project file not found: $ProjectFile"
+        Write-Err "Project file not found: $ProjectFile"
         exit 1
     }
-    
-    # Get absolute path for better error messages
+
     $ProjectPath = Resolve-Path $ProjectFile
     $ProjectName = [System.IO.Path]::GetFileNameWithoutExtension($ProjectFile)
-    
-    Write-Warning "Building project: $ProjectName"
-    Write-Detail "  File: $ProjectPath"
-    Write-Detail "  Config: $Config"
+
+    Write-Warn "Building: $ProjectName"
+    Write-Detail "  File:     $ProjectPath"
+    Write-Detail "  Config:   $Config"
     Write-Detail "  Platform: $Platform"
     Write-Host ""
-    
-    # Prepare MSBuild arguments
+
     $MSBuildArgs = @(
         $ProjectPath,
         "/t:Build",
@@ -222,35 +213,37 @@ function Build-DPROJProject {
         "/nologo",
         "/m"
     )
-    
+
     if ($VerboseOutput) {
         $MSBuildArgs += "/v:normal"
     } else {
         $MSBuildArgs += "/v:minimal"
     }
-    
-    # Build the project
-    Write-Warning "Starting build..."
+
+    Write-Warn "Starting build..."
     Write-Host ""
 
-    # Capture output and display it
+    # Execute MSBuild and capture output
     $BuildOutput = & $MSBuild @MSBuildArgs 2>&1
     $BuildExitCode = $LASTEXITCODE
 
-    # Display the output
+    # Display output
     $BuildOutput | ForEach-Object { Write-Host $_ }
 
     Write-Host ""
 
     if ($BuildExitCode -eq 0) {
         Write-Success "Build completed successfully!"
-        $true
+        return $true
     } else {
-        Write-Error "Build failed with exit code: $BuildExitCode"
-        $false
+        Write-Err "Build failed with exit code: $BuildExitCode"
+        return $false
     }
 }
 
+# -----------------------------------------------------------------------------
+# Show-BuildSummary
+# -----------------------------------------------------------------------------
 function Show-BuildSummary {
     param(
         [string]$ProjectFile,
@@ -258,56 +251,54 @@ function Show-BuildSummary {
         [string]$Platform,
         [bool]$Success
     )
-    
+
     $ProjectName = [System.IO.Path]::GetFileNameWithoutExtension($ProjectFile)
-    
+
     Write-Host ""
-    Write-Host "=" * 60 -ForegroundColor DarkGray
+    Write-Host ("=" * 60) -ForegroundColor DarkGray
     Write-Host "Build Summary" -ForegroundColor White
-    Write-Host "=" * 60 -ForegroundColor DarkGray
-    Write-Detail "Project: $ProjectName"
-    Write-Detail "Config: $Config"
+    Write-Host ("=" * 60) -ForegroundColor DarkGray
+    Write-Detail "Project:  $ProjectName"
+    Write-Detail "Config:   $Config"
     Write-Detail "Platform: $Platform"
     Write-Host ""
-    
+
     if ($Success) {
-        Write-Success "✓ BUILD SUCCESSFUL"
+        Write-Success "BUILD SUCCESSFUL"
     } else {
-        Write-Error "✗ BUILD FAILED"
+        Write-Err "BUILD FAILED"
     }
-    
-    Write-Host "=" * 60 -ForegroundColor DarkGray
+
+    Write-Host ("=" * 60) -ForegroundColor DarkGray
 }
 
-# Main execution
+# -----------------------------------------------------------------------------
+# Main Execution
+# -----------------------------------------------------------------------------
 try {
-    Write-Info "Universal DPROJ Build Script"
+    Write-Info "DelphiBuildDPROJ - Universal Delphi Project Builder"
     Write-Host ""
-    
+
     # Initialize Delphi environment
-    $MSBuild = Initialize-DelphiEnvironment -DelphiVersion $DelphiVersion
+    $MSBuild = Initialize-DelphiEnvironment -Version $DelphiVersion
     Write-Host ""
-    
+
     # Build the project
     $BuildSuccess = Build-DPROJProject -ProjectFile $ProjectFile -Config $Config -Platform $Platform -MSBuild $MSBuild -VerboseOutput $VerboseOutput
 
-    # Ensure we have a clean boolean value
-    if ($BuildSuccess -eq $true) {
-        $BuildResult = $true
-    } else {
-        $BuildResult = $false
-    }
+    # Normalize boolean result
+    $BuildResult = ($BuildSuccess -eq $true)
 
     # Show summary
     Show-BuildSummary -ProjectFile $ProjectFile -Config $Config -Platform $Platform -Success $BuildResult
-    
+
     # Exit with appropriate code
     if (-not $BuildResult) {
         exit 1
     }
 }
 catch {
-    Write-Error "Unexpected error: $($_.Exception.Message)"
-    Write-Error "Stack trace: $($_.ScriptStackTrace)"
+    Write-Err "Unexpected error: $($_.Exception.Message)"
+    Write-Err "Stack trace: $($_.ScriptStackTrace)"
     exit 1
 }
