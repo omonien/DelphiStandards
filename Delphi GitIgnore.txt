@@ -96,8 +96,24 @@ OSX64/
 Win32/
 Win64/
 Android/
+iOSDevice32/
+iOSDevice64/
+iOSSimARM64/
+iOSSimulator/
+
+# Android (modern Delphi trennt in 32/64)
+Android32/
+Android64/
+
+# Windows-Artefakte
+Thumbs.db
+desktop.ini
+
 # TMS Web Core
 TMSWeb/
+
+# npm dependencies
+node_modules/
 
 # other SCM/versioning files
 .hg/
@@ -112,6 +128,8 @@ modules/
 
 # Custom build directories
 _Release-Binaries
+Build/bin/
+
 
 # Gnu Global / VSCode Pascal editing
 GPATH
