@@ -96,14 +96,12 @@ OSX64/
 Win32/
 Win64/
 Android/
+Android32/
+Android64/
 iOSDevice32/
 iOSDevice64/
 iOSSimARM64/
 iOSSimulator/
-
-# Android (modern Delphi trennt in 32/64)
-Android32/
-Android64/
 
 # Windows-Artefakte
 Thumbs.db
