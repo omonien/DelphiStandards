@@ -23,7 +23,7 @@
 # Version: 2.0 (keep in sync with Style Guide headers)
 
 #
-# Copyright (c) 2025 Olaf Monien
+# Copyright (c) 2025-2026 Olaf Monien
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this file to use without restriction, subject to inclusion of this notice.
 ###############################################################################
