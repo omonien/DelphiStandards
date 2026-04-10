@@ -4,7 +4,6 @@
   </a>
 </div>
 
-
 # Delphi Standards
 
 [![Lang-EN](https://img.shields.io/badge/lang-EN-blue.svg)](README.md) [![Lang-DE](https://img.shields.io/badge/lang-DE-lightgrey.svg)](README.de.md)
@@ -47,16 +46,19 @@ Note: The style guide is maintained in German and English. Please keep both docu
 
 ## Quick Start
 
-1) Agree on the style guide in your team
+1. Agree on the style guide in your team
+
 - Indentation: 2 spaces; line length: 120 chars (keep formatter/editor guideline in sync)
 - Naming conventions (A-/L-/F‑prefixes, components, constants, enums with SCOPEDENUMS)
 - Modern features: generics, anonymous methods, inline variables (10.3+), multiline strings (12+)
 
-2) Enable .gitignore
+1. Enable .gitignore
+
 - Copy "Delphi GitIgnore.txt" to the repo root and rename it to ".gitignore"
 - Add project-specific rules as needed
 
-3) Add Git Attributes
+1. Add Git Attributes
+
 - Copy "Delphi GitAttributes.txt" to the repo root and rename it to ".gitattributes".
 - It normalizes EOLs for Delphi sources (CRLF) and marks binary artifacts (.res, .ico, .dcu, .bpl, .dll, .exe) as binary.
 - If your project stores .dfm/.fmx as text (default), keep the text rules. If stored as binary, switch to the binary rules in the template.
@@ -69,9 +71,11 @@ Note: The style guide is maintained in German and English. Please keep both docu
 The repository includes a universal PowerShell script for building Delphi projects from the command line. This is ideal for CI/CD pipelines, automated builds, or any scenario where you need to build Delphi projects without the IDE.
 
 **Features:**
+
 - Auto-detects the latest installed Delphi version from Windows Registry
 - Supports all Delphi project files (.dproj)
-- Configurable build configuration (Debug/Release) and platform (Win32/Win64)
+- Configurable build configuration (Debug/Release) and platform (Win32/Win64/Linux64)
+- Linux debug symbol and map file support via `-LinuxMap`
 - Colored console output for better readability
 - Verbose mode for detailed build information
 - No dependencies on specific projects - works with any Delphi project
@@ -79,6 +83,7 @@ The repository includes a universal PowerShell script for building Delphi projec
 - Robust error handling and clean exit codes for CI/CD integration
 
 **Usage:**
+
 ```powershell
 # Basic usage (auto-detects Delphi version, builds Debug/Win32)
 .\DelphiBuildDPROJ.ps1 -ProjectFile "MyProject.dproj"
@@ -88,16 +93,22 @@ The repository includes a universal PowerShell script for building Delphi projec
 
 # Use specific Delphi version with verbose output
 .\DelphiBuildDPROJ.ps1 -ProjectFile "MyProject.dproj" -DelphiVersion "22.0" -VerboseOutput
+
+# Build for Linux64 with full debug symbols and map file
+.\DelphiBuildDPROJ.ps1 -ProjectFile "MyProject.dproj" -Platform Linux64 -LinuxMap
 ```
 
 **Parameters:**
+
 - `-ProjectFile` (required): Path to the .dproj file to build
 - `-Config`: Build configuration (default: "Debug")
 - `-Platform`: Target platform (default: "Win32")
 - `-DelphiVersion`: Delphi version to use (default: auto-detect latest)
 - `-VerboseOutput`: Enable verbose MSBuild output
+- `-LinuxMap`: Enable Linux debug symbols and map file generation (sets `DCC_MapFile=3`, `DCC_DebugInfo=3`, `DCC_LocalSymbols`, `DCC_LocalDebugSymbols`, `DCC_DebugInformation=2`, `DCC_DebugInfoInExe=false`)
 
 **Requirements:**
+
 - Embarcadero Delphi installed
 - MSBuild available (Visual Studio Build Tools or full Visual Studio)
 
@@ -106,6 +117,7 @@ For more details, see the script documentation in [DelphiBuildDPROJ.ps1](DelphiB
 ## Releases
 
 Official releases are available in the [release-assets/](release-assets/) directory. Each release includes:
+
 - PDF versions of the style guides (German and English)
 - Git templates (.gitignore and .gitattributes)
 - Documentation

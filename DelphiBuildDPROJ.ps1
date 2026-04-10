@@ -1,6 +1,9 @@
 # =============================================================================
 # DelphiBuildDPROJ.ps1 - Universal Delphi Project Builder
 # =============================================================================
+# Copyright (c) 2025 Olaf Monien - The MIT License (MIT)
+#   https://github.com/omonien/DelphiStandards
+# =============================================================================
 # Builds any Delphi project file (.dproj) with MSBuild
 # Can be used in any Delphi project - no dependencies to specific projects
 #
@@ -33,8 +36,13 @@ param(
     [string]$Config = "",
     [string]$Platform = "",
     [string]$DelphiVersion = "",
-    [switch]$VerboseOutput
+    [switch]$VerboseOutput,
+    [switch]$LinuxMap
 )
+
+Write-Host "============================================="
+Write-Host "| Universal Delphi Project Builder  -  v1.1 |"
+Write-Host "============================================="
 
 # =============================================================================
 # CONFIGURATION - Edit these defaults as needed
@@ -188,7 +196,8 @@ function Build-DPROJProject {
         [string]$Config,
         [string]$Platform,
         [string]$MSBuild,
-        [bool]$VerboseOutput
+        [bool]$VerboseOutput,
+        [bool]$LinuxMap
     )
 
     if (-not (Test-Path $ProjectFile)) {
@@ -209,7 +218,19 @@ function Build-DPROJProject {
         $ProjectPath,
         "/t:Build",
         "/p:Config=$Config",
-        "/p:Platform=$Platform",
+        "/p:Platform=$Platform"
+    )
+
+    if ($LinuxMap) {
+        $MSBuildArgs += "/p:DCC_MapFile=3"
+        $MSBuildArgs += "/p:DCC_DebugInfo=3"
+        $MSBuildArgs += "/p:DCC_LocalSymbols=true"
+        $MSBuildArgs += "/p:DCC_LocalDebugSymbols=true"
+        $MSBuildArgs += "/p:DCC_DebugInformation=2"
+        $MSBuildArgs += "/p:DCC_DebugInfoInExe=false"
+    }
+
+    $MSBuildArgs += @(
         "/nologo",
         "/m"
     )
@@ -284,7 +305,7 @@ try {
     Write-Host ""
 
     # Build the project
-    $BuildSuccess = Build-DPROJProject -ProjectFile $ProjectFile -Config $Config -Platform $Platform -MSBuild $MSBuild -VerboseOutput $VerboseOutput
+    $BuildSuccess = Build-DPROJProject -ProjectFile $ProjectFile -Config $Config -Platform $Platform -MSBuild $MSBuild -VerboseOutput $VerboseOutput -LinuxMap $LinuxMap
 
     # Normalize boolean result
     $BuildResult = ($BuildSuccess -eq $true)
