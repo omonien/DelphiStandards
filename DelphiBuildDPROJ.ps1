@@ -200,13 +200,15 @@ function Build-DPROJProject {
         [bool]$LinuxMap
     )
 
-    if (-not (Test-Path $ProjectFile)) {
+    if (-not (Test-Path -LiteralPath $ProjectFile)) {
         Write-Err "Project file not found: $ProjectFile"
         exit 1
     }
 
-    $ProjectPath = Resolve-Path $ProjectFile
-    $ProjectName = [System.IO.Path]::GetFileNameWithoutExtension($ProjectFile)
+    $ProjectItem = Get-Item -LiteralPath $ProjectFile
+    $ProjectPath = $ProjectItem.FullName
+    
+    $ProjectName = [System.IO.Path]::GetFileNameWithoutExtension($ProjectPath)
 
     Write-Warn "Building: $ProjectName"
     Write-Detail "  File:     $ProjectPath"
