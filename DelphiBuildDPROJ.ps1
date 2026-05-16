@@ -8,12 +8,18 @@
 #   .\DelphiBuildDPROJ.ps1 -ProjectFile "MyProject.dproj"
 #   .\DelphiBuildDPROJ.ps1 -ProjectFile "MyProject.dproj" -Config Release -Platform Win64
 #   .\DelphiBuildDPROJ.ps1 -ProjectFile "MyProject.dproj" -DelphiVersion "23.0" -VerboseOutput
+#   .\DelphiBuildDPROJ.ps1 -ProjectFile "MyProject.dproj" -ExtraProperties @{ Foo = "bar" }
 #
 # PARAMETERS:
 #   -ProjectFile     : Path to the .dproj file to build (mandatory)
 #   -Config          : Build configuration (default: "Debug")
 #   -Platform        : Target platform (default: "Win64")
 #   -DelphiVersion   : Delphi version to use (default: auto-detect latest)
+#   -ExtraProperties : Hashtable of extra MSBuild /p:Key=Value properties to
+#                      forward to the project build (default: empty).
+#                      Values containing whitespace are auto-quoted; simple
+#                      tokens stay unquoted so MSBuild conditions like
+#                      '$(Foo)'=='bar' match correctly.
 #   -VerboseOutput   : Enable verbose MSBuild output
 #
 # REQUIREMENTS:
@@ -33,6 +39,7 @@ param(
     [string]$Config = "",
     [string]$Platform = "",
     [string]$DelphiVersion = "",
+    [hashtable]$ExtraProperties = @{},
     [switch]$VerboseOutput
 )
 
@@ -188,6 +195,7 @@ function Build-DPROJProject {
         [string]$Config,
         [string]$Platform,
         [string]$MSBuild,
+        [hashtable]$ExtraProperties,
         [bool]$VerboseOutput
     )
 
@@ -213,6 +221,23 @@ function Build-DPROJProject {
         "/nologo",
         "/m"
     )
+
+    if ($ExtraProperties) {
+        foreach ($Key in $ExtraProperties.Keys) {
+            # MSBuild treats embedded quotes in /p:Key=Value as part of the
+            # property value (so "true" != true), so only quote when the
+            # value actually contains whitespace - paths and the like still
+            # survive PowerShell -> MSBuild argument splitting, but simple
+            # tokens stay simple.
+            $Value = [string]$ExtraProperties[$Key]
+            if ($Value -match '\s') {
+                $MSBuildArgs += "/p:$Key=`"$Value`""
+            } else {
+                $MSBuildArgs += "/p:$Key=$Value"
+            }
+            Write-Detail "  Extra:    $Key=$Value"
+        }
+    }
 
     if ($VerboseOutput) {
         $MSBuildArgs += "/v:normal"
@@ -284,7 +309,7 @@ try {
     Write-Host ""
 
     # Build the project
-    $BuildSuccess = Build-DPROJProject -ProjectFile $ProjectFile -Config $Config -Platform $Platform -MSBuild $MSBuild -VerboseOutput $VerboseOutput
+    $BuildSuccess = Build-DPROJProject -ProjectFile $ProjectFile -Config $Config -Platform $Platform -MSBuild $MSBuild -ExtraProperties $ExtraProperties -VerboseOutput $VerboseOutput
 
     # Normalize boolean result
     $BuildResult = ($BuildSuccess -eq $true)
