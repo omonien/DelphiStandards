@@ -1,3 +1,12 @@
+# =============================================================================
+# NOTE: This is the .gitignore for THIS repository only.
+#
+# The curated Delphi .gitignore template for your projects can be found in:
+#   "Delphi GitIgnore.txt"
+#
+# Do NOT copy this file for your Delphi projects — use the template above.
+# =============================================================================
+
 # Ignore release artifacts and local build outputs
 release-assets/
 
