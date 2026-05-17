@@ -11,3 +11,5 @@ release-assets/
 !.vscode/tasks.json
 !.vscode/launch.json
 
+# Test artifacts
+test/

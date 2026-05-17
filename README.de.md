@@ -4,7 +4,6 @@
   </a>
 </div>
 
-
 # Delphi Standards
 
 [![Lang-DE](https://img.shields.io/badge/lang-DE-blue.svg)](README.de.md) [![Lang-EN](https://img.shields.io/badge/lang-EN-lightgrey.svg)](README.md)
@@ -47,16 +46,19 @@ Hinweis: Der Style Guide wird synchron in Deutsch und Englisch gepflegt. Änderu
 
 ## Schnellstart
 
-1) Style Guide lesen und im Team vereinbaren
+1. Style Guide lesen und im Team vereinbaren
+
 - Einrückung: 2 Leerzeichen; Zeilenlänge: 120 Zeichen (Formatter/Editor‑Guideline synchron halten)
 - Namenskonventionen (A-/L-/F‑Präfixe, Komponenten, Konstanten, Enums mit SCOPEDENUMS)
 - Moderne Features: Generics, anonyme Methoden, Inline‑Variablen (10.3+), Multiline‑Strings (12+)
 
-2) .gitignore aktivieren
+1. .gitignore aktivieren
+
 - Datei „Delphi GitIgnore.txt“ ins Repo‑Root kopieren und in „.gitignore“ umbenennen
 - Projektspezifische Ergänzungen nach Bedarf vornehmen
 
-3) Git Attributes hinzufügen
+1. Git Attributes hinzufügen
+
 - „Delphi GitAttributes.txt“ ins Repo‑Root kopieren und in „.gitattributes“ umbenennen.
 - Die Datei normalisiert Zeilenenden für Delphi‑Quellen (CRLF) und markiert Binärartefakte (.res, .ico, .dcu, .bpl, .dll, .exe) als binary.
 - Werden .dfm/.fmx im Projekt als Text gespeichert (Standard), die Text‑Regeln beibehalten. Bei Binärspeicherung die Binary‑Regeln aus dem Template aktivieren.
@@ -69,9 +71,11 @@ Hinweis: Der Style Guide wird synchron in Deutsch und Englisch gepflegt. Änderu
 Das Repository enthält ein universelles PowerShell-Skript zum Bauen von Delphi-Projekten per Kommandozeile. Dies ist ideal für CI/CD-Pipelines, automatisierte Builds oder jedes Szenario, in dem Delphi-Projekte ohne IDE gebaut werden müssen.
 
 **Features:**
+
 - Erkennt automatisch die neueste installierte Delphi-Version aus der Windows-Registry
 - Unterstützt alle Delphi-Projektdateien (.dproj)
-- Konfigurierbare Build-Konfiguration (Debug/Release) und Plattform (Win32/Win64)
+- Konfigurierbare Build-Konfiguration (Debug/Release) und Plattform (Win32/Win64/Linux64)
+- Linux-Debug-Symbol- und Map-Datei-Unterstützung über `-LinuxMap`
 - Farbige Konsolenausgabe für bessere Lesbarkeit
 - Verbose-Modus für detaillierte Build-Informationen
 - Keine Abhängigkeiten von spezifischen Projekten - funktioniert mit jedem Delphi-Projekt
@@ -79,6 +83,7 @@ Das Repository enthält ein universelles PowerShell-Skript zum Bauen von Delphi-
 - Robuste Fehlerbehandlung und saubere Exit-Codes für CI/CD-Integration
 
 **Verwendung:**
+
 ```powershell
 # Einfache Verwendung (erkennt Delphi-Version automatisch, baut Debug/Win32)
 .\DelphiBuildDPROJ.ps1 -ProjectFile "MeinProjekt.dproj"
@@ -88,24 +93,57 @@ Das Repository enthält ein universelles PowerShell-Skript zum Bauen von Delphi-
 
 # Spezifische Delphi-Version mit ausführlicher Ausgabe verwenden
 .\DelphiBuildDPROJ.ps1 -ProjectFile "MeinProjekt.dproj" -DelphiVersion "22.0" -VerboseOutput
+
+# Für Linux64 mit vollständigen Debug-Symbolen und Map-Datei bauen
+.\DelphiBuildDPROJ.ps1 -ProjectFile "MeinProjekt.dproj" -Platform Linux64 -LinuxMap
 ```
 
 **Parameter:**
+
 - `-ProjectFile` (erforderlich): Pfad zur .dproj-Datei, die gebaut werden soll
 - `-Config`: Build-Konfiguration (Standard: "Debug")
 - `-Platform`: Zielplattform (Standard: "Win32")
 - `-DelphiVersion`: Zu verwendende Delphi-Version (Standard: automatische Erkennung der neuesten Version)
 - `-VerboseOutput`: Aktiviert ausführliche MSBuild-Ausgabe
+- `-LinuxMap`: Aktiviert Linux-Debug-Symbole und Map-Datei-Generierung (setzt `DCC_MapFile=3`, `DCC_DebugInfo=3`, `DCC_LocalSymbols`, `DCC_LocalDebugSymbols`, `DCC_DebugInformation=2`, `DCC_DebugInfoInExe=false`)
 
 **Voraussetzungen:**
+
 - Embarcadero Delphi installiert
 - MSBuild verfügbar (Visual Studio Build Tools oder vollständiges Visual Studio)
 
 Weitere Details finden Sie in der Skript-Dokumentation in [DelphiBuildDPROJ.ps1](DelphiBuildDPROJ.ps1).
 
+### WSL-Wrapper
+
+Für Entwickler, die in WSL (Windows Subsystem for Linux) arbeiten, enthält das Repository einen Bash-Wrapper [DelphiBuildDPROJ.sh](DelphiBuildDPROJ.sh), der WSL über `powershell.exe` an die Windows-Delphi-Toolchain anbindet. Er akzeptiert dieselben Parameter wie das PowerShell-Skript und übersetzt WSL-Pfade automatisch in Windows-Pfade.
+
+**Verwendung (aus WSL):**
+
+```bash
+# Skript ausführbar machen (einmalig)
+chmod +x ./DelphiBuildDPROJ.sh
+
+# Einfache Verwendung
+./DelphiBuildDPROJ.sh -ProjectFile ./MeinProjekt.dproj
+
+# Release für Win64 bauen
+./DelphiBuildDPROJ.sh -ProjectFile ./MeinProjekt.dproj -Config Release -Platform Win64
+
+# Für Linux64 mit vollständigen Debug-Symbolen und Map-Datei bauen
+./DelphiBuildDPROJ.sh -ProjectFile ./MeinProjekt.dproj -Platform Linux64 -LinuxMap
+```
+
+**Voraussetzungen:**
+
+- WSL (Windows Subsystem for Linux)
+- `powershell.exe` aus WSL heraus im `PATH` erreichbar (bei Standard-WSL-Installationen gegeben)
+- Embarcadero Delphi auf dem Windows-Host installiert
+
 ## Releases
 
 Offizielle Releases sind im Verzeichnis [release-assets/](release-assets/) verfügbar. Jedes Release enthält:
+
 - PDF-Versionen der Style Guides (Deutsch und Englisch)
 - Git-Templates (.gitignore und .gitattributes)
 - Dokumentation
@@ -125,4 +163,3 @@ Für die Erstellung neuer Releases siehe [release-tools/README.md](release-tools
 ## Lizenz
 
 MIT License – siehe Hinweise in den Dateien
-
