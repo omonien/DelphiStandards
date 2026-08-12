@@ -1,5 +1,5 @@
 # Delphi .gitattributes template
-# Version: 2.0 (keep in sync with Style Guide headers)
+# Version: 2.1 (keep in sync with Style Guide headers)
 
 #
 # Purpose:
@@ -22,6 +22,16 @@
 *.inc   text eol=crlf
 *.rc    text eol=crlf
 *.dproj text eol=crlf
+# Project groups belong to the same toolchain as .dproj. Without this line
+# they stay unnormalized and their line endings depend on each developer's
+# local core.autocrlf setting.
+*.groupproj text eol=crlf
+
+# Other project text files: CRLF as well, so files edited on Windows do not
+# carry mixed line endings into the repository.
+*.sql   text eol=crlf
+*.ps1   text eol=crlf
+*.md    text eol=crlf
 
 # Forms/Frames: pick exactly one mode for each, see section 2)
 # Default Delphi setting is TEXT for .dfm/.fmx; if your project uses BINARY, switch below.
