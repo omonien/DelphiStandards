@@ -1,0 +1,61 @@
+{
+  "_comment": "delphi-project.json — project-level overrides for the delphi-project skill.",
+  "_comment2": "Place this file in the project root. Omit sections to use skill defaults.",
+  "_comment3": "NOTE: encoding rules (UTF-8 BOM, CRLF) are Delphi requirements and are NOT configurable.",
+
+  "naming": {
+    "_comment": "Variable and type naming prefixes. Change to match your team's existing conventions.",
+    "classPrefix": "T",
+    "interfacePrefix": "I",
+    "exceptionPrefix": "E",
+    "localVarPrefix": "L",
+    "fieldPrefix": "F",
+    "paramPrefix": "A",
+    "globalPrefix": "G",
+    "constantPrefix": "c",
+    "stringConstantPrefix": "sc",
+    "resourceStringPrefix": "rs"
+  },
+
+  "formatting": {
+    "_comment": "Code style preferences.",
+    "indentSize": 2,
+    "maxLineLength": 120,
+    "beginOnSameLine": true
+  },
+
+  "paths": {
+    "_comment": "Project directory structure. outputPath and dcuPath must use MSBuild variables.",
+    "outputPath": "$(Platform)/$(Config)",
+    "dcuPath": "$(Platform)/$(Config)/dcu",
+    "sourceDir": "src",
+    "testDir": "tests",
+    "libsDir": "libs",
+    "buildDir": "build",
+    "docsDir": "docs",
+    "resDir": "res"
+  },
+
+  "header": {
+    "_comment": "Default values for unit header template. Override per project.",
+    "author": "Team Name",
+    "license": "MIT",
+    "format": "xmldoc"
+  },
+
+  "testing": {
+    "_comment": "Test framework configuration.",
+    "framework": "DUnitX",
+    "asSubmodule": true,
+    "submodulePath": "libs/DUnitX",
+    "submoduleUrl": "https://github.com/VSoftTechnologies/DUnitX.git"
+  },
+
+  "delphi": {
+    "_comment": "Default Delphi target version for new projects.",
+    "defaultVersion": "13",
+    "defaultProjectVersion": "20.4",
+    "defaultPlatform": "Win32",
+    "targetedPlatforms": 3
+  }
+}

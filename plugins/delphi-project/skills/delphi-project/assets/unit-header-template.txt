@@ -1,0 +1,11 @@
+/// <summary>
+///   {{BRIEF_DESCRIPTION}}
+/// </summary>
+/// <remarks>
+///   {{DETAILED_DESCRIPTION}}
+/// </remarks>
+/// <author>{{AUTHOR}}</author>
+/// <created>{{DATE}}</created>
+/// <modified>{{DATE}}</modified>
+/// <license>{{LICENSE}}</license>
+unit {{UNIT_NAME}};
