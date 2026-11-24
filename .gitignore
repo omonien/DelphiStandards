@@ -22,3 +22,6 @@ release-assets/
 
 # Test artifacts
 test/
+
+# Python bytecode (agent skill scripts)
+__pycache__/
