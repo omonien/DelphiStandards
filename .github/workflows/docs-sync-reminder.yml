@@ -27,8 +27,7 @@ jobs:
 
             const pairs = [
               { de: "Delphi Style Guide DE.md", en: "Delphi Style Guide EN.md" },
-              // README: only if you introduce a README.de.md later
-              // { de: "README.de.md", en: "README.md" },
+              { de: "README.de.md", en: "README.md" },
             ];
 
             const outOfSync = pairs.filter(p =>
