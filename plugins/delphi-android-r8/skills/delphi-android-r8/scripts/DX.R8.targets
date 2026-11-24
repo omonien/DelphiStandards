@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DX.R8.targets - R8 for Delphi FMX Android App Bundles (RAD Studio 13.x)
+  Replaces Delphi's D8 dex-merge output with an R8-optimized DEX and adds mapping.txt + r8.json
+  to the AAB (BUNDLE-METADATA) before Delphi signs it. Google Play then reports shrinking,
+  optimization and obfuscation from the real R8 metadata.
+
+  Tested: Delphi 13.1 (BDS 37.0), Android64, AAB, AdMob 25.4 + UMP 4.0 via Kastri, R8 9.0.32 (Nov 2026).
+
+  Install: add ONE line at the end of the .dproj, right before </Project>:
+    <Import Project="..\tools\delphi-r8\DX.R8.targets" Condition="Exists('..\tools\delphi-r8\DX.R8.targets')" />
+  Requires next to this file: dx_r8.py, delphi-base-rules.pro, r8\r8.jar (R8 >= 9.0.32, see fetch_r8.ps1).
+  Optional: r8-rules.pro next to the .dproj for app-specific rules.
+
+  Active only for Platform=Android64 and BT_BuildType=AppStore (AAB). Disable with /p:DX_R8=false.
+  Overridable: DX_R8_Python (default "py -3"), DX_R8_Jar.
+
+  Hooks into RAD Studio 13 internals (CodeGear.Common.Targets / CodeGear.Deployment.Targets):
+    BuildClassesDex               writes $(ClassesDir)\classes.dex (PAClient AndroidDexMerge)
+    @(_ClasspathFiles)            non-dexed system JARs (%(Jar)) + project JARs + AAR classes.jar + R.jar
+    @(AarReference)               the original .aar files (only source of their proguard.txt consumer rules)
+    _AndroidCreateBaseModuleFile  packs $(ClassesDir) into BaseModule.zip
+    _AndroidAppBundle             bundletool -> unsigned AAB ($(APK_FILENAME))
+    _AndroidSign                  jarsigner
+  Re-check these names after every Delphi update.
+
+  Note: "$(DX_R8_Work)." - the trailing dot prevents "...\r8\" + closing quote from escaping the
+  quote on Windows (WinError 123).
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <DX_R8 Condition="'$(DX_R8)'==''">true</DX_R8>
+    <DX_R8_Active>false</DX_R8_Active>
+    <DX_R8_Active Condition="'$(DX_R8)'=='true' And '$(Platform)'=='Android64' And '$(BT_BuildType)'=='AppStore'">true</DX_R8_Active>
+    <DX_R8_Dir Condition="'$(DX_R8_Dir)'==''">$(MSBuildThisFileDirectory)</DX_R8_Dir>
+    <!-- Python 3.10+ -->
+    <DX_R8_Python Condition="'$(DX_R8_Python)'==''">py -3</DX_R8_Python>
+    <!-- Current R8 from Google (>= 9.0.32). Delphi's bundled cmdline-tools R8 8.6.17 rejects -build-metadata-output. -->
+    <DX_R8_Jar Condition="'$(DX_R8_Jar)'==''">$(DX_R8_Dir)r8\r8.jar</DX_R8_Jar>
+    <DX_R8_Work>$(APK_OutputDir)r8\</DX_R8_Work>
+  </PropertyGroup>
+
+  <!-- Step 1: after Delphi's dexing, before the base module is packed. Replaces the DEX files in $(ClassesDir). -->
+  <Target Name="DX_R8_Shrink"
+          AfterTargets="BuildClassesDex"
+          BeforeTargets="_AndroidCreateBaseModuleFile"
+          DependsOnTargets="__StripOutputFiles"
+          Condition="'$(DX_R8_Active)'=='true'">
+    <Error Condition="!Exists('$(DX_R8_Jar)')" Text="DX.R8: r8.jar missing: $(DX_R8_Jar) (run fetch_r8.ps1)" />
+    <MakeDir Directories="$(DX_R8_Work)" />
+    <WriteLinesToFile File="$(DX_R8_Work)inputs.txt" Lines="@(_ClasspathFiles)" Overwrite="true" />
+    <ItemGroup>
+      <_DX_R8_So Include="$(APK_LibraryDir)\*.so;$(APK_LibraryDir)\..\armeabi-v7a\*.so" />
+      <_DX_R8_ConsumerRules Include="$(AndroidLibsDir)**\proguard.txt" />
+      <!-- Delphi drops proguard.txt when extracting AARs, so the first glob finds nothing; pass the AARs themselves -->
+      <_DX_R8_ConsumerRules Include="@(AarReference->'%(FullPath)')" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(DX_R8_Work)natives.txt" Lines="@(_DX_R8_So)" Overwrite="true" />
+    <WriteLinesToFile File="$(DX_R8_Work)consumer-rules.txt" Lines="@(_DX_R8_ConsumerRules)" Overwrite="true" />
+    <Exec Command="$(DX_R8_Python) &quot;$(DX_R8_Dir)dx_r8.py&quot; shrink --java &quot;$(JAVA_TOOL)&quot; --r8 &quot;$(DX_R8_Jar)&quot; --sdk-api-path &quot;$(SDKApiLevelPath)&quot; --min-api $(VerInfo_MinSdkVersion) --inputs &quot;$(DX_R8_Work)inputs.txt&quot; --natives &quot;$(DX_R8_Work)natives.txt&quot; --consumer-rules &quot;$(DX_R8_Work)consumer-rules.txt&quot; --manifest &quot;$(MergedManifestFile)&quot; --extra-rules &quot;$(MSBuildProjectDirectory)\r8-rules.pro&quot; --base-rules &quot;$(DX_R8_Dir)delphi-base-rules.pro&quot; --classes-dir &quot;$(ClassesDir)&quot; --work &quot;$(DX_R8_Work).&quot;" />
+  </Target>
+
+  <!-- Step 2: mapping.txt and r8.json into the unsigned AAB, before _AndroidSign. -->
+  <Target Name="DX_R8_BundleMetadata"
+          AfterTargets="_AndroidAppBundle"
+          BeforeTargets="_AndroidSign"
+          Condition="'$(DX_R8_Active)'=='true'">
+    <Exec Command="$(DX_R8_Python) &quot;$(DX_R8_Dir)dx_r8.py&quot; bundle-metadata --aab &quot;$(APK_FILENAME)&quot; --work &quot;$(DX_R8_Work).&quot;" />
+  </Target>
+
+</Project>

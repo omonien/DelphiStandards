@@ -17,6 +17,7 @@ This repository provides a compact, battle-tested baseline for consistent Delphi
 - A clear, modern Delphi Style Guide (German and English)
 - A curated .gitignore tailored for Delphi
 - A Git Attributes template for EOL normalization and binary protection
+- Agent skills that teach AI coding agents (Claude Code, Cursor, grok CLI, Codex) these standards
 
 Both help teams write consistent code and avoid common friction.
 
@@ -41,6 +42,7 @@ Beyond team settings, a consistent Style Guide also benefits solo developers ove
 - Delphi Style Guide (EN): [Delphi Style Guide EN.md](Delphi%20Style%20Guide%20EN.md)
 - Universal Build Script: [DelphiBuildDPROJ.ps1](DelphiBuildDPROJ.ps1) - PowerShell script for building Delphi projects via command line
 - Release Tools: [release-tools/](release-tools/) - Automated release creation
+- Agent Skills: [plugins/](plugins/) - Skills for Claude Code, Cursor, grok CLI and Codex (see [Agent Skills](#agent-skills-claude-code-cursor-grok-cli-codex))
 
 Note: The style guide is maintained in German and English. Please keep both documents in sync (maintainer will handle synchronization post-merge if needed).
 
@@ -139,6 +141,35 @@ chmod +x ./DelphiBuildDPROJ.sh
 - WSL (Windows Subsystem for Linux)
 - `powershell.exe` accessible in `PATH` from within WSL (default on standard WSL installations)
 - Embarcadero Delphi installed on the Windows host
+
+## Agent Skills (Claude Code, Cursor, grok CLI, Codex)
+
+The [plugins/](plugins/) folder contains agent skills: a `SKILL.md` per topic plus scripts and references that tell a coding agent exactly how to do a Delphi-specific job. They build on this repository's style guide and Git templates.
+
+| Skill | What it does |
+| --- | --- |
+| [delphi-project](plugins/delphi-project/skills/delphi-project/SKILL.md) | Create and maintain Delphi projects: DPROJ validation and normalization, scaffolding following this style guide, encoding check (UTF-8 BOM + CRLF), DUnitX setup. Delphi 11–13. |
+| [delphi-android-r8](plugins/delphi-android-r8/skills/delphi-android-r8/SKILL.md) | R8 for Delphi FMX Android App Bundles: fixes Google Play's "low DEX optimization / obfuscation" warning with a tested MSBuild hook, before/after measurement and a mandatory start test. |
+
+**Claude Code** (this repository is a plugin marketplace):
+
+```text
+/plugin marketplace add omonien/DelphiStandards
+/plugin install delphi-project@delphi-standards
+/plugin install delphi-android-r8@delphi-standards
+```
+
+**Cursor, grok CLI, Codex and other agents** read instructions from the repository they work in. Clone this repository (or add it as a submodule, e.g. `tools/DelphiStandards`) and point to the skills from your project's `AGENTS.md` (or `CLAUDE.md`):
+
+```markdown
+## Delphi skills
+For Delphi project and DPROJ work follow tools/DelphiStandards/plugins/delphi-project/skills/delphi-project/SKILL.md.
+For Android packaging, R8 or Google Play DEX warnings follow
+tools/DelphiStandards/plugins/delphi-android-r8/skills/delphi-android-r8/SKILL.md.
+Read the whole SKILL.md before acting; its scripts are in the scripts/ folder next to it.
+```
+
+The scripts need Python 3.10+ (`winget install Python.Python.3.12`); delphi-android-r8 additionally needs a JDK 17+, R8 9.0.32 (downloaded by its `fetch_r8.ps1`) and, for testing, `bundletool` and `adb`.
 
 ## Releases
 

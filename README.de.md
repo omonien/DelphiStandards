@@ -17,6 +17,7 @@ Dieses Projekt stellt eine kompakte, praxiserprobte Grundlage für einheitlichen
 - Ein klarer, moderner Delphi Style Guide (Deutsch und Englisch)
 - Eine kuratierte .gitignore‑Konfiguration speziell für Delphi
 - Eine .gitattributes‑Vorlage zur EOL‑Normalisierung und zum Schutz von Binärdateien
+- Agent-Skills, die KI-Coding-Agenten (Claude Code, Cursor, grok CLI, Codex) diese Standards beibringen
 
 Beides hilft Teams, konsistenten Code zu schreiben und typische Reibungen zu vermeiden.
 
@@ -41,6 +42,7 @@ Auch außerhalb von Teams profitieren Einzelentwickler langfristig von einem kon
 - Delphi Style Guide (EN): [Delphi Style Guide EN.md](Delphi%20Style%20Guide%20EN.md)
 - Universelles Build-Skript: [DelphiBuildDPROJ.ps1](DelphiBuildDPROJ.ps1) - PowerShell-Skript zum Bauen von Delphi-Projekten per Kommandozeile
 - Release Tools: [release-tools/](release-tools/) - Automatisierte Release-Erstellung
+- Agent-Skills: [plugins/](plugins/) - Skills für Claude Code, Cursor, grok CLI und Codex (siehe [Agent-Skills](#agent-skills-claude-code-cursor-grok-cli-codex))
 
 Hinweis: Der Style Guide wird synchron in Deutsch und Englisch gepflegt. Änderungen sollten immer in beiden Dokumenten erfolgen.
 
@@ -139,6 +141,35 @@ chmod +x ./DelphiBuildDPROJ.sh
 - WSL (Windows Subsystem for Linux)
 - `powershell.exe` aus WSL heraus im `PATH` erreichbar (bei Standard-WSL-Installationen gegeben)
 - Embarcadero Delphi auf dem Windows-Host installiert
+
+## Agent-Skills (Claude Code, Cursor, grok CLI, Codex)
+
+Der Ordner [plugins/](plugins/) enthält Skills für KI-Coding-Agenten: pro Thema eine `SKILL.md` mit Skripten und Referenzen, die einem Agenten genau vorgeben, wie eine Delphi-spezifische Aufgabe zu erledigen ist. Sie bauen auf dem Style Guide und den Git-Vorlagen dieses Repositorys auf.
+
+| Skill | Inhalt |
+| --- | --- |
+| [delphi-project](plugins/delphi-project/skills/delphi-project/SKILL.md) | Delphi-Projekte anlegen und pflegen: DPROJ-Validierung und -Normalisierung, Projektgerüst nach diesem Style Guide, Encoding-Prüfung (UTF-8 BOM + CRLF), DUnitX. Delphi 11–13. |
+| [delphi-android-r8](plugins/delphi-android-r8/skills/delphi-android-r8/SKILL.md) | R8 für Delphi-FMX-Android-App-Bundles: behebt die Google-Play-Warnung zu fehlender DEX-Optimierung/Obfuskierung mit einem getesteten MSBuild-Hook, Vorher-Nachher-Messung und verpflichtendem Starttest. |
+
+**Claude Code** (dieses Repository ist ein Plugin-Marktplatz):
+
+```text
+/plugin marketplace add omonien/DelphiStandards
+/plugin install delphi-project@delphi-standards
+/plugin install delphi-android-r8@delphi-standards
+```
+
+**Cursor, grok CLI, Codex und andere Agenten** lesen ihre Anweisungen aus dem Repository, in dem sie arbeiten. Dieses Repository klonen (oder als Submodul einbinden, z. B. `tools/DelphiStandards`) und in der `AGENTS.md` (oder `CLAUDE.md`) des eigenen Projekts auf die Skills verweisen:
+
+```markdown
+## Delphi skills
+For Delphi project and DPROJ work follow tools/DelphiStandards/plugins/delphi-project/skills/delphi-project/SKILL.md.
+For Android packaging, R8 or Google Play DEX warnings follow
+tools/DelphiStandards/plugins/delphi-android-r8/skills/delphi-android-r8/SKILL.md.
+Read the whole SKILL.md before acting; its scripts are in the scripts/ folder next to it.
+```
+
+Die Skripte brauchen Python 3.10+ (`winget install Python.Python.3.12`); delphi-android-r8 zusätzlich ein JDK 17+, R8 9.0.32 (lädt das mitgelieferte `fetch_r8.ps1`) und zum Testen `bundletool` und `adb`.
 
 ## Releases
 
