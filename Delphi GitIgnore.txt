@@ -49,11 +49,14 @@
 *.dcp
 *.so
 *.apk
+*.aab
 *.drc
 *.map
 *.dres
 *.rsm
 *.tds
+*.pdb
+*.obj
 *.dcu
 *.lib
 *.a
@@ -93,8 +96,11 @@ DCU/
 Linux64/
 OSX32/
 OSX64/
+OSXARM64/
 Win32/
 Win64/
+Win64x/
+WinARM64EC/
 Android/
 Android32/
 Android64/
@@ -133,6 +139,9 @@ Build/bin/
 GPATH
 GRTAGS
 GTAGS
+
+# JetBrains IDEs
+.idea/
 
 # VSCode
 .vscode/*
