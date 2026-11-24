@@ -14,6 +14,11 @@
 # - Choose ONE mode for .dfm/.fmx (TEXT vs BINARY). Do not enable both.
 
 ############################################################
+# 0) Default: let Git detect text files and normalize them
+############################################################
+* text=auto
+
+############################################################
 # 1) Line endings (text files): enforce CRLF
 ############################################################
 *.pas   text eol=crlf
@@ -22,6 +27,9 @@
 *.inc   text eol=crlf
 *.rc    text eol=crlf
 *.dproj text eol=crlf
+*.groupproj text eol=crlf
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
 
 # Forms/Frames: pick exactly one mode for each, see section 2)
 # Default Delphi setting is TEXT for .dfm/.fmx; if your project uses BINARY, switch below.
@@ -41,4 +49,19 @@
 *.bpl   binary
 *.dll   binary
 *.exe   binary
+*.dcp   binary
+*.so    binary
+*.apk   binary
+*.aab   binary
+*.ipa   binary
+*.pdb   binary
+
+# Images and archives
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.bmp   binary
+*.zip   binary
+*.7z    binary
 
