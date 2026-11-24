@@ -149,7 +149,6 @@ The [plugins/](plugins/) folder contains agent skills: a `SKILL.md` per topic pl
 | Skill | What it does |
 | --- | --- |
 | [delphi-project](plugins/delphi-project/skills/delphi-project/SKILL.md) | Create and maintain Delphi projects: DPROJ validation and normalization, scaffolding following this style guide, encoding check (UTF-8 BOM + CRLF), DUnitX setup. Delphi 11–13. |
-| [dx-data](plugins/dx-data/skills/dx-data/SKILL.md) | DX.Data micro-ORM: schema from entity attributes, validation, mapping, migrations, unit of work (SQLite, PostgreSQL, MS SQL Server). |
 | [delphi-android-r8](plugins/delphi-android-r8/skills/delphi-android-r8/SKILL.md) | R8 for Delphi FMX Android App Bundles: fixes Google Play's "low DEX optimization / obfuscation" warning with a tested MSBuild hook, before/after measurement and a mandatory start test. |
 
 **Claude Code** (this repository is a plugin marketplace):
@@ -157,7 +156,6 @@ The [plugins/](plugins/) folder contains agent skills: a `SKILL.md` per topic pl
 ```text
 /plugin marketplace add omonien/DelphiStandards
 /plugin install delphi-project@delphi-standards
-/plugin install dx-data@delphi-standards
 /plugin install delphi-android-r8@delphi-standards
 ```
 

@@ -149,7 +149,6 @@ Der Ordner [plugins/](plugins/) enthält Skills für KI-Coding-Agenten: pro Them
 | Skill | Inhalt |
 | --- | --- |
 | [delphi-project](plugins/delphi-project/skills/delphi-project/SKILL.md) | Delphi-Projekte anlegen und pflegen: DPROJ-Validierung und -Normalisierung, Projektgerüst nach diesem Style Guide, Encoding-Prüfung (UTF-8 BOM + CRLF), DUnitX. Delphi 11–13. |
-| [dx-data](plugins/dx-data/skills/dx-data/SKILL.md) | DX.Data Micro-ORM: Schema aus Entity-Attributen, Validierung, Mapping, Migrationen, Unit of Work (SQLite, PostgreSQL, MS SQL Server). |
 | [delphi-android-r8](plugins/delphi-android-r8/skills/delphi-android-r8/SKILL.md) | R8 für Delphi-FMX-Android-App-Bundles: behebt die Google-Play-Warnung zu fehlender DEX-Optimierung/Obfuskierung mit einem getesteten MSBuild-Hook, Vorher-Nachher-Messung und verpflichtendem Starttest. |
 
 **Claude Code** (dieses Repository ist ein Plugin-Marktplatz):
@@ -157,7 +156,6 @@ Der Ordner [plugins/](plugins/) enthält Skills für KI-Coding-Agenten: pro Them
 ```text
 /plugin marketplace add omonien/DelphiStandards
 /plugin install delphi-project@delphi-standards
-/plugin install dx-data@delphi-standards
 /plugin install delphi-android-r8@delphi-standards
 ```
 

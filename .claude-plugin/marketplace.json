@@ -1,6 +1,6 @@
 {
   "name": "delphi-standards",
-  "description": "Agent skills for Delphi / RAD Studio development — project and DPROJ management, DX.Data data access, and R8 / Google Play DEX optimization for FMX Android apps",
+  "description": "Agent skills for Delphi / RAD Studio development — project and DPROJ management, and R8 / Google Play DEX optimization for FMX Android apps",
   "owner": {
     "name": "Olaf Monien",
     "email": "olaf@monien.net"
@@ -10,12 +10,6 @@
       "name": "delphi-project",
       "source": "./plugins/delphi-project",
       "description": "Create, maintain, and manage Delphi projects with professional quality — DPROJ management, coding standards, project scaffolding",
-      "version": "0.2.0"
-    },
-    {
-      "name": "dx-data",
-      "source": "./plugins/dx-data",
-      "description": "DX.Data micro-ORM for Delphi — schema from entity attributes, validation, mapping, migrations, unit of work (SQLite/PostgreSQL/MSSQL)",
       "version": "0.2.0"
     },
     {
